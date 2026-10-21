@@ -25,7 +25,9 @@ html,body{margin:0;background:#0b1020;color:#f5f5ff;font-family:'Segoe UI','Noto
 <body><div id="root"></div>
 <script>
 const {useState,useEffect,useRef,useCallback}=React;
-const html=htm.bind(React.createElement);
+/* React #62 fix: React needs style as an object, so convert style="a:b;c:d" strings written in templates */
+const h=(t,p,...c)=>{if(p&&typeof p.style=='string'){p.style=Object.fromEntries(p.style.split(';').filter(s=>s.includes(':')).map(s=>{const i=s.indexOf(':'),k=s.slice(0,i).trim(),v=s.slice(i+1).trim();return[k.startsWith('--')?k:k.replace(/-([a-z])/g,(_,x)=>x.toUpperCase()),v]}))}return React.createElement(t,p,...c)};
+const html=htm.bind(h);
 const SB_URL='https://wyrzddptgwlsdynjhuqg.supabase.co',SB_KEY='sb_publishable_y9CDQ_cnfa63eIuNJ7vz0w_qEkOkycH';
 let sb=null;try{sb=window.supabase.createClient(SB_URL,SB_KEY)}catch(e){}
 
@@ -245,5 +247,10 @@ function App(){
   <button onClick=${()=>setLang(lang=='bn'?'en':'bn')} class="fixed top-3 right-3 z-40 glass !rounded-full px-4 py-1.5 text-sm" style="margin-top:env(safe-area-inset-top,0px)">🌐 ${t('lang')}</button>
   ${rid?html`<${Room} key=${rid} id=${rid} t=${t} lang=${lang}/>`:html`<${Setup} t=${t} notify=${notify} onOpen=${open}/>`}
   ${toast&&html`<div class="fixed bottom-6 inset-x-0 z-50 grid place-items-center fade"><div class="glass px-5 py-2 text-sm">${toast}</div></div>`}</div>`}
-ReactDOM.createRoot(document.getElementById('root')).render(html`<${App}/>`);
+class EB extends React.Component{
+ constructor(p){super(p);this.state={e:null}}
+ static getDerivedStateFromError(e){return{e}}
+ componentDidCatch(e){console.error(e)}
+ render(){return this.state.e?html`<div class="min-h-screen grid place-items-center p-6 text-center"><div class="glass p-6 max-w-sm"><div class="text-5xl">😅</div><p class="mt-3">Something went wrong / কিছু ভুল হয়েছে</p><div class="mt-4 flex gap-3 justify-center"><button class="btn" onClick=${()=>this.setState({e:null})}>Retry</button><button class="btn" onClick=${()=>{location.hash='';location.reload()}}>Home</button></div></div></div>`:this.props.children}}
+ReactDOM.createRoot(document.getElementById('root')).render(html`<${EB}><${App}/><//>`);
 </script></body></html>
