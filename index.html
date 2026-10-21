@@ -21,6 +21,9 @@ html,body{margin:0;background:#0b1020;color:#f5f5ff;font-family:'Segoe UI','Noto
 @keyframes float{50%{transform:translateY(-8px) rotateY(12deg)}}
 @keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 @keyframes beam{from{opacity:.4}to{opacity:1}}
+@keyframes glow{from{box-shadow:0 0 12px var(--a),0 0 30px var(--a)}to{box-shadow:0 0 30px var(--b),0 0 70px var(--b)}}
+@keyframes drift{0%{transform:translateY(105vh) rotate(0)}100%{transform:translateY(-15vh) rotate(360deg)}}
+.glow{animation:glow 1.2s ease-in-out infinite alternate}
 </style></head>
 <body><div id="root"></div>
 <script>
@@ -39,13 +42,13 @@ const OCC={
 const T={
 en:{title:'Surprise Room',sName:'Your name',rName:'Receiver’s name',occ:'Occasion',note:'Secret note / letter',photo:'Photo (for the puzzle)',voice:'Voice wish',rec:'Record',stop:'Stop',mods:'Modules',cake:'Celebration',puzzle:'Puzzle',vault:'Vault',card:'Souvenir',pin:'Vault code (4 digits)',create:'Create Surprise',copy:'Copy Surprise Link',copied:'Surprise link copied!',open:'Open room',start:'Start',need:'Please enter both names',
 birthday:'Birthday',achievement:'Achievement',wedding:'Wedding / Anniversary',graduation:'Graduation',
-greet:r=>`✨ A Special Surprise for ${r}! ✨`,sub:o=>`Celebrating your special ${o}...`,
+greet:r=>`✨ A Special Surprise for ${r}! ✨`,sub:()=>'Someone special created a magical journey for you...',
 drag:'Drag the flame onto the candles',blow:'Blow into the mic (or tap)',tap:'Tap to blow',mic:'Listening…',done:'Hooray! Make a wish!',relight:'Relight',
 solve:'Slide the tiles to rebuild the photo',env:'Tap the envelope to read the letter',dial:'Turn the brass dials to the secret code',unlock:'Unlock',wrong:'Wrong code, try again',opened:'The vault is open! 💎',
 save:'Download card',share:'Share',congrats:'Congratulations',from:'From',hold:'Long-press the image to save it',nf:'Room not found',sync:'Live sync',local:'Local sync',lang:'বাংলা'},
 bn:{title:'সারপ্রাইজ রুম',sName:'আপনার নাম',rName:'প্রাপকের নাম',occ:'উপলক্ষ',note:'গোপন বার্তা / চিঠি',photo:'ছবি (পাজলের জন্য)',voice:'ভয়েস উইশ',rec:'রেকর্ড',stop:'থামান',mods:'মডিউল',cake:'উদযাপন',puzzle:'পাজল',vault:'ভল্ট',card:'স্মারক',pin:'ভল্ট কোড (৪ সংখ্যা)',create:'সারপ্রাইজ তৈরি করুন',copy:'সারপ্রাইজ লিংক কপি করুন',copied:'সারপ্রাইজ লিংক কপি হয়েছে!',open:'রুম খুলুন',start:'শুরু করুন',need:'দুটি নামই লিখুন',
 birthday:'জন্মদিন',achievement:'সাফল্য',wedding:'বিয়ে / বার্ষিকী',graduation:'গ্র্যাজুয়েশন',
-greet:r=>`✨ ${r}-এর জন্য বিশেষ সারপ্রাইজ! ✨`,sub:o=>`আপনার বিশেষ ${o} উদযাপন করছি...`,
+greet:r=>`✨ ${r}-এর জন্য বিশেষ সারপ্রাইজ! ✨`,sub:()=>'বিশেষ কেউ আপনার জন্য একটি জাদুকরী যাত্রা সাজিয়েছে...',
 drag:'আগুনটি টেনে মোমবাতিতে ধরান',blow:'মাইকে ফুঁ দিন (বা ট্যাপ করুন)',tap:'ট্যাপ করে ফুঁ দিন',mic:'শুনছি…',done:'হুররে! একটি ইচ্ছা করুন!',relight:'আবার জ্বালান',
 solve:'টাইল সরিয়ে ছবিটি সাজান',env:'চিঠি পড়তে খামে ট্যাপ করুন',dial:'পিতলের ডায়াল ঘুরিয়ে গোপন কোড দিন',unlock:'খুলুন',wrong:'ভুল কোড, আবার চেষ্টা করুন',opened:'ভল্ট খুলে গেছে! 💎',
 save:'কার্ড ডাউনলোড',share:'শেয়ার',congrats:'অভিনন্দন',from:'প্রেরক',hold:'ছবিটি সেভ করতে চেপে ধরুন',nf:'রুম পাওয়া যায়নি',sync:'লাইভ সিঙ্ক',local:'লোকাল সিঙ্ক',lang:'English'}};
@@ -189,11 +192,13 @@ function Room({id,t,lang}){
  const start=()=>{ac();bgm(room.occasion,true);setGo(true)};
  const bg={'--a':o.c[0],'--b':o.c[1],background:`radial-gradient(circle at 15% 10%,${o.c[0]}44,transparent 50%),radial-gradient(circle at 85% 90%,${o.c[1]}44,transparent 50%),#0b1020`};
  return html`<div class="min-h-screen" style=${bg}>
-  ${!go?html`<div class="min-h-screen grid place-items-center p-4"><div class="glass p-8 max-w-md text-center fade">
-    <div class="text-6xl mb-4" style="animation:float 3s infinite">${o.e}</div>
-    <h1 class="text-2xl font-bold leading-snug">${t('greet',room.receiver_name)}</h1>
-    <p class="mt-2 opacity-80">${t('sub',t(room.occasion))}</p>
-    <button onClick=${start} class="btn mt-6 text-lg">${t('start')} / শুরু করুন</button></div></div>`
+  ${!go?html`<div class="fixed inset-0 overflow-hidden grid place-items-center p-4 z-30" style=${bg}>
+    ${Array.from({length:16},(_,i)=>html`<span key=${i} class="absolute pointer-events-none" style=${{left:(i*6.5)%100+'%',fontSize:20+(i%4)*8+'px',opacity:.5,animation:`drift ${9+(i%5)*2}s linear ${-i*1.3}s infinite`}}>${o.fx[i%o.fx.length]}</span>`)}
+    <div class="glass p-8 max-w-md w-full text-center fade relative">
+    <div class="text-7xl mb-4" style="animation:float 3s infinite">${o.e}</div>
+    <h1 class="text-2xl sm:text-3xl font-bold leading-snug">${t('greet',room.receiver_name)}</h1>
+    <p class="mt-3 opacity-80">${t('sub')}</p>
+    <button onClick=${start} class="btn glow mt-8 text-lg">${t('start')} / শুরু করুন</button></div></div>`
   :html`<div class="max-w-xl mx-auto p-4 fade">
     <div class="flex items-center justify-between mb-4 text-sm"><span class="opacity-70">● ${live?t('sync'):t('local')}</span>
      <button onClick=${()=>{bgm(room.occasion,mute);setMute(!mute)}} class="text-xl">${mute?'🔇':'🔊'}</button></div>
@@ -209,7 +214,7 @@ function Room({id,t,lang}){
 function Setup({t,notify,onOpen}){
  const[f,setF]=useState({s:'',r:'',occ:'birthday',note:'',pin:'1234',modes:{cake:true,puzzle:true,vault:true},photo:'',voice:''}),[id,setId]=useState(''),[rc,setRc]=useState(null);
  const set=(k,v)=>setF(x=>({...x,[k]:v}));
- const link=()=>location.href.split('#')[0]+'#'+id;
+ const link=()=>roomLink(id);
  const recToggle=async()=>{if(rc){rc.stop();return}try{const s=await navigator.mediaDevices.getUserMedia({audio:true}),m=new MediaRecorder(s),ch=[];
   m.ondataavailable=e=>ch.push(e.data);m.onstop=async()=>{s.getTracks().forEach(x=>x.stop());set('voice',await b64(new Blob(ch)));setRc(null)};m.start();setRc(m)}catch(e){}};
  const create=async()=>{if(!f.s||!f.r)return notify(t('need'));
@@ -235,13 +240,17 @@ function Setup({t,notify,onOpen}){
   <label class="block text-sm">${t('pin')}<input class=${inp+' mt-1'} inputmode="numeric" maxlength=4 value=${f.pin} onInput=${e=>set('pin',e.target.value.replace(/\D/g,'').padEnd(0))}/></label>
   <button class="btn w-full" onClick=${create}>✨ ${t('create')}</button></div></div>`}
 
+/* ---------- routing: / = creator form, /?room=xyz (or #xyz) = receiver welcome ---------- */
+const QMODE=!/claude/i.test(location.hostname); // published preview only passes #hash, so use ?room= everywhere else
+const getRid=()=>new URLSearchParams(location.search).get('room')||location.hash.slice(1)||'';
+const roomLink=id=>QMODE?location.href.split(/[?#]/)[0]+'?room='+id:location.href.split('#')[0]+'#'+id;
 /* ---------- app ---------- */
 function App(){
- const[lang,setLang]=useState('bn'),[rid,setRid]=useState(location.hash.slice(1)),[toast,setToast]=useState('');
- useEffect(()=>{const h=()=>setRid(location.hash.slice(1));addEventListener('hashchange',h);return()=>removeEventListener('hashchange',h)},[]);
+ const[lang,setLang]=useState('bn'),[rid,setRid]=useState(getRid()),[toast,setToast]=useState('');
+ useEffect(()=>{const h=()=>setRid(getRid());addEventListener('hashchange',h);addEventListener('popstate',h);return()=>{removeEventListener('hashchange',h);removeEventListener('popstate',h)}},[]);
  const t=(k,...a)=>{const v=T[lang][k];return typeof v=='function'?v(...a):v};
  const notify=m=>{setToast(m);setTimeout(()=>setToast(''),2500)};
- const open=id=>{location.hash=id;setRid(id)};
+ const open=id=>{if(QMODE)try{history.pushState({},'','?room='+id)}catch(e){location.hash=id}else location.hash=id;setRid(id)};
  return html`<div>
   <${Confetti}/>
   <button onClick=${()=>setLang(lang=='bn'?'en':'bn')} class="fixed top-3 right-3 z-40 glass !rounded-full px-4 py-1.5 text-sm" style="margin-top:env(safe-area-inset-top,0px)">🌐 ${t('lang')}</button>
