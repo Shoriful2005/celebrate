@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Surprise Room</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+:root{color-scheme:dark;--a:#f472b6;--b:#a78bfa;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{margin:0;background:#0b1020;color:#f5f5ff;font-family:'Segoe UI','Noto Sans Bengali',system-ui,sans-serif;overflow-x:hidden}
+.glass{background:rgba(255,255,255,.09);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.2);border-radius:1.5rem;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.btn{background:linear-gradient(90deg,var(--a),var(--b));color:#111;font-weight:700;padding:.6rem 1.4rem;border-radius:999px;transition:transform .15s}
+.btn:active{transform:scale(.95)}
+.fade{animation:fade .7s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes flick{from{transform:scale(1) rotate(-4deg)}to{transform:scale(1.2) rotate(4deg)}}
+@keyframes rise{0%{opacity:.9;transform:translateY(0)}100%{opacity:0;transform:translateY(-90px) scale(2)}}
+@keyframes float{50%{transform:translateY(-8px) rotateY(12deg)}}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes beam{from{opacity:.4}to{opacity:1}}
+</style></head>
+<body><div id="root"></div>
+<script>
+const {useState,useEffect,useRef,useCallback}=React;
+const html=htm.bind(React.createElement);
+const SB_URL='https://wyrzddptgwlsdynjhuqg.supabase.co',SB_KEY='sb_publishable_y9CDQ_cnfa63eIuNJ7vz0w_qEkOkycH';
+let sb=null;try{sb=window.supabase.createClient(SB_URL,SB_KEY)}catch(e){}
+
+const OCC={
+ birthday:{e:'🎂',p:'bd',c:['#f472b6','#a78bfa'],fx:['🎉','🎈','🎂']},
+ achievement:{e:'🏆',p:'ac',c:['#fbbf24','#f97316'],fx:['🏆','⭐','🥂']},
+ wedding:{e:'💍',p:'wd',c:['#fda4af','#f0abfc'],fx:['💖','💍','🌸']},
+ graduation:{e:'🎓',p:'gr',c:['#38bdf8','#818cf8'],fx:['🎓','📜','✨']}};
+const T={
+en:{title:'Surprise Room',sName:'Your name',rName:'Receiver’s name',occ:'Occasion',note:'Secret note / letter',photo:'Photo (for the puzzle)',voice:'Voice wish',rec:'Record',stop:'Stop',mods:'Modules',cake:'Celebration',puzzle:'Puzzle',vault:'Vault',card:'Souvenir',pin:'Vault code (4 digits)',create:'Create Surprise',copy:'Copy Surprise Link',copied:'Surprise link copied!',open:'Open room',start:'Start',need:'Please enter both names',
+birthday:'Birthday',achievement:'Achievement',wedding:'Wedding / Anniversary',graduation:'Graduation',
+greet:r=>`✨ A Special Surprise for ${r}! ✨`,sub:o=>`Celebrating your special ${o}...`,
+drag:'Drag the flame onto the candles',blow:'Blow into the mic (or tap)',tap:'Tap to blow',mic:'Listening…',done:'Hooray! Make a wish!',relight:'Relight',
+solve:'Slide the tiles to rebuild the photo',env:'Tap the envelope to read the letter',dial:'Turn the brass dials to the secret code',unlock:'Unlock',wrong:'Wrong code, try again',opened:'The vault is open! 💎',
+save:'Download card',share:'Share',congrats:'Congratulations',from:'From',hold:'Long-press the image to save it',nf:'Room not found',sync:'Live sync',local:'Local sync',lang:'বাংলা'},
+bn:{title:'সারপ্রাইজ রুম',sName:'আপনার নাম',rName:'প্রাপকের নাম',occ:'উপলক্ষ',note:'গোপন বার্তা / চিঠি',photo:'ছবি (পাজলের জন্য)',voice:'ভয়েস উইশ',rec:'রেকর্ড',stop:'থামান',mods:'মডিউল',cake:'উদযাপন',puzzle:'পাজল',vault:'ভল্ট',card:'স্মারক',pin:'ভল্ট কোড (৪ সংখ্যা)',create:'সারপ্রাইজ তৈরি করুন',copy:'সারপ্রাইজ লিংক কপি করুন',copied:'সারপ্রাইজ লিংক কপি হয়েছে!',open:'রুম খুলুন',start:'শুরু করুন',need:'দুটি নামই লিখুন',
+birthday:'জন্মদিন',achievement:'সাফল্য',wedding:'বিয়ে / বার্ষিকী',graduation:'গ্র্যাজুয়েশন',
+greet:r=>`✨ ${r}-এর জন্য বিশেষ সারপ্রাইজ! ✨`,sub:o=>`আপনার বিশেষ ${o} উদযাপন করছি...`,
+drag:'আগুনটি টেনে মোমবাতিতে ধরান',blow:'মাইকে ফুঁ দিন (বা ট্যাপ করুন)',tap:'ট্যাপ করে ফুঁ দিন',mic:'শুনছি…',done:'হুররে! একটি ইচ্ছা করুন!',relight:'আবার জ্বালান',
+solve:'টাইল সরিয়ে ছবিটি সাজান',env:'চিঠি পড়তে খামে ট্যাপ করুন',dial:'পিতলের ডায়াল ঘুরিয়ে গোপন কোড দিন',unlock:'খুলুন',wrong:'ভুল কোড, আবার চেষ্টা করুন',opened:'ভল্ট খুলে গেছে! 💎',
+save:'কার্ড ডাউনলোড',share:'শেয়ার',congrats:'অভিনন্দন',from:'প্রেরক',hold:'ছবিটি সেভ করতে চেপে ধরুন',nf:'রুম পাওয়া যায়নি',sync:'লাইভ সিঙ্ক',local:'লোকাল সিঙ্ক',lang:'English'}};
+
+/* ---------- audio ---------- */
+let AC;const ac=()=>{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();return AC};
+const TUNES={
+ birthday:[[392,.3],[392,.15],[440,.5],[392,.5],[523,.5],[494,.9],[392,.3],[392,.15],[440,.5],[392,.5],[587,.5],[523,.9]],
+ achievement:[[523,.15],[523,.15],[523,.15],[523,.4],[415,.4],[466,.4],[523,.2],[466,.1],[523,.9]],
+ wedding:[[262,.4],[330,.4],[392,.4],[523,.8],[392,.4],[330,.4],[440,.4],[523,.8]],
+ graduation:[[392,.4],[392,.4],[440,.4],[494,.6],[523,.4],[587,.4],[659,.9]]};
+const dur=n=>TUNES[n].reduce((s,x)=>s+x[1],0)*1000;
+function tune(n,vol=.15){try{const a=ac();let t=a.currentTime+.05;const g=a.createGain();g.gain.value=vol;g.connect(a.destination);
+ TUNES[n].forEach(([f,d])=>{const o=a.createOscillator();o.type=n=='achievement'?'sawtooth':'triangle';o.frequency.value=f;const e=a.createGain();e.gain.setValueAtTime(0,t);e.gain.linearRampToValueAtTime(1,t+.03);e.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(e);e.connect(g);o.start(t);o.stop(t+d+.05);t+=d})}catch(e){}}
+let bgT;function bgm(n,on){clearInterval(bgT);if(on){tune(n,.06);bgT=setInterval(()=>tune(n,.06),dur(n)+2500)}}
+const boom=o=>window.dispatchEvent(new CustomEvent('boom',{detail:OCC[o].fx}));
+
+/* ---------- helpers ---------- */
+const sq=f=>new Promise(r=>{const i=new Image();i.onload=()=>{const m=Math.min(i.width,i.height),c=document.createElement('canvas');c.width=c.height=480;c.getContext('2d').drawImage(i,(i.width-m)/2,(i.height-m)/2,m,m,0,0,480,480);r(c.toDataURL('image/jpeg',.8))};i.src=URL.createObjectURL(f)});
+const b64=f=>new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result);x.readAsDataURL(f)});
+const nb=e=>{const r=[],x=e%3,y=(e/3)|0;if(x>0)r.push(e-1);if(x<2)r.push(e+1);if(y>0)r.push(e-3);if(y<2)r.push(e+3);return r};
+function seeded(id){let s=0;for(const ch of id)s=(s*31+ch.charCodeAt(0))>>>0;const R=()=>(s=(s*1664525+1013904223)>>>0)/4294967296;
+ let t=[0,1,2,3,4,5,6,7,8],e=8;for(let i=0;i<90;i++){const n=nb(e),j=n[(R()*n.length)|0];[t[e],t[j]]=[t[j],t[e]];e=j}return t}
+const inp='w-full rounded-xl bg-white/10 border border-white/20 px-3 py-2 outline-none focus:border-white/60';
+
+/* ---------- confetti ---------- */
+function Confetti(){const r=useRef();useEffect(()=>{const c=r.current,x=c.getContext('2d');let P=[],raf;
+ const fit=()=>{c.width=innerWidth;c.height=innerHeight};fit();addEventListener('resize',fit);
+ const L=()=>{x.clearRect(0,0,c.width,c.height);P=P.filter(p=>p.y<c.height+30);P.forEach(p=>{p.vy+=.12;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);if(p.t){x.font='22px serif';x.fillText(p.t,0,0)}else{x.fillStyle=p.c;x.fillRect(-4,-3,8,6)}x.restore()});raf=requestAnimationFrame(L)};L();
+ const on=e=>{const em=e.detail||[];for(let i=0;i<150;i++){const a=Math.random()*6.28,s=4+Math.random()*9;P.push({x:c.width/2,y:c.height*.45,vx:Math.cos(a)*s,vy:Math.sin(a)*s-6,r:0,vr:Math.random()*.3-.15,c:`hsl(${Math.random()*360},90%,60%)`,t:i%3==0?em[i%em.length]:null})}};
+ addEventListener('boom',on);return()=>{cancelAnimationFrame(raf);removeEventListener('boom',on);removeEventListener('resize',fit)}},[]);
+ return html`<canvas ref=${r} class="fixed inset-0 pointer-events-none z-50"/>`}
+
+/* ---------- realtime room ---------- */
+function useRoom(id){
+ const[room,setRoom]=useState(null),[live,setLive]=useState(false),ch=useRef(),bc=useRef(),rm=useRef();rm.current=room;
+ const apply=useCallback(p=>{setRoom(r=>r?{...r,...p}:r);if(p.ev&&rm.current){boom(rm.current.occasion);tune(rm.current.occasion,.2)}},[]);
+ useEffect(()=>{let on=1;(async()=>{let r=null;
+  try{if(sb){const{data}=await sb.from('rooms').select('*').eq('id',id).maybeSingle();r=data}}catch(e){}
+  if(!r)try{r=JSON.parse(localStorage.getItem('room_'+id))}catch(e){}
+  if(on)setRoom(r||false)})();
+  try{if(sb)ch.current=sb.channel('room_'+id).on('broadcast',{event:'s'},m=>apply(m.payload)).subscribe(s=>setLive(s==='SUBSCRIBED'))}catch(e){}
+  try{bc.current=new BroadcastChannel('room_'+id);bc.current.onmessage=m=>apply(m.data)}catch(e){}
+  return()=>{on=0;try{ch.current&&sb.removeChannel(ch.current);bc.current&&bc.current.close()}catch(e){}}},[id]);
+ const up=useCallback(p=>{apply(p);
+  try{ch.current&&ch.current.send({type:'broadcast',event:'s',payload:p})}catch(e){}
+  try{bc.current&&bc.current.postMessage(p)}catch(e){}
+  const db={};['is_candle_lit','is_puzzle_solved','is_vault_unlocked'].forEach(k=>{if(k in p)db[k]=p[k]});
+  try{if(sb&&Object.keys(db).length)sb.from('rooms').update(db).eq('id',id).then(()=>{})}catch(e){}
+  try{localStorage.setItem('room_'+id,JSON.stringify({...rm.current,...p,ev:undefined}))}catch(e){}},[id]);
+ return{room,up,live}}
+
+/* ---------- modules ---------- */
+function Stage({room,up,t}){
+ const lit=room.is_candle_lit,blown=room.blown,o=OCC[room.occasion],bd=room.occasion=='birthday';
+ const cake=useRef(),[drag,setDrag]=useState(null),[mic,setMic]=useState(false);
+ useEffect(()=>{if(!drag)return;const mv=e=>setDrag({x:e.clientX,y:e.clientY});
+  const end=e=>{const r=cake.current.getBoundingClientRect();if(e.clientX>r.left-40&&e.clientX<r.right+40&&e.clientY>r.top-50&&e.clientY<r.top+r.height*.55)up({is_candle_lit:true,blown:false});setDrag(null)};
+  addEventListener('pointermove',mv);addEventListener('pointerup',end);return()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',end)}},[!!drag]);
+ const blow=()=>up({is_candle_lit:false,blown:true,ev:'blown'});
+ const listen=async()=>{try{const s=await navigator.mediaDevices.getUserMedia({audio:true}),c=ac(),n=c.createAnalyser();c.createMediaStreamSource(s).connect(n);
+  const d=new Uint8Array(n.fftSize);setMic(true);let h=0;const L=()=>{n.getByteTimeDomainData(d);let m=0;d.forEach(v=>m=Math.max(m,Math.abs(v-128)));h=m>60?h+1:0;
+   if(h>6){s.getTracks().forEach(x=>x.stop());setMic(false);blow();return}requestAnimationFrame(L)};L()}catch(e){}};
+ return html`<div class="text-center select-none">
+  <p class="mb-2 opacity-80">${!lit&&!blown?t('drag'):lit?(mic?t('mic'):t('blow')):t('done')}</p>
+  <div ref=${cake} class="relative inline-block pt-12">
+   <div class="absolute top-0 inset-x-0 flex justify-center gap-4 text-3xl h-12">
+    ${lit&&(bd?[0,1,2]:[0]).map(i=>html`<span key=${i} style="animation:flick .3s infinite alternate">${bd?'🔥':'✨'}</span>`)}
+    ${blown&&[0,1,2].map(i=>html`<span key=${'s'+i} style=${{animation:'rise 2s forwards',animationDelay:i*.25+'s',opacity:0}}>💨</span>`)}
+   </div>
+   <div class="text-[8rem] sm:text-[10rem] leading-none" style="filter:drop-shadow(0 25px 30px rgba(0,0,0,.6));animation:float 3s ease-in-out infinite">${o.e}</div>
+  </div>
+  <div class="mt-5 flex justify-center gap-3 flex-wrap">
+   ${!lit&&!blown&&html`<div onPointerDown=${e=>{e.preventDefault();setDrag({x:e.clientX,y:e.clientY})}} class="text-6xl cursor-grab touch-none">🔥</div>`}
+   ${lit&&html`<button class="btn" onClick=${listen}>🎤 ${t('blow').split(' (')[0]}</button><button class="btn" onClick=${blow}>${t('tap')}</button>`}
+   ${blown&&html`<button class="btn" onClick=${()=>up({is_candle_lit:false,blown:false})}>${t('relight')}</button>`}
+  </div>
+  ${drag&&html`<div class="fixed text-5xl pointer-events-none z-40" style=${{left:drag.x-24,top:drag.y-24}}>🔥</div>`}
+ </div>`}
+
+function Viz({src}){const a=useRef(),c=useRef();useEffect(()=>{const el=a.current;let an,raf;
+ try{const x=ac(),s=x.createMediaElementSource(el);an=x.createAnalyser();an.fftSize=64;s.connect(an);an.connect(x.destination)}catch(e){}
+ const d=new Uint8Array(32),g=c.current.getContext('2d');
+ const L=()=>{raf=requestAnimationFrame(L);g.clearRect(0,0,300,60);if(an){an.getByteFrequencyData(d);d.forEach((v,i)=>{g.fillStyle='#fbbf24';g.fillRect(i*9.4,60-v/4.5,6,v/4.5)})}};L();
+ el.play().catch(()=>{});return()=>cancelAnimationFrame(raf)},[]);
+ return html`<div><canvas ref=${c} width=300 height=60 class="mx-auto max-w-full"/><audio ref=${a} src=${src} controls class="w-full mt-2"/></div>`}
+
+function Env({note,t}){const[o,setO]=useState(0);
+ return html`<div class="text-center mt-5"><button onClick=${()=>setO(1)} class=${'text-7xl '+(o?'':'animate-bounce')}>${o?'💌':'✉️'}</button>
+ ${o?html`<p class="glass p-4 mt-3 whitespace-pre-wrap text-left fade">${note||'❤'}</p>`:html`<p class="text-sm opacity-70">${t('env')}</p>`}</div>`}
+
+function Puzzle({room,up,t}){
+ const tiles=room.tiles||seeded(room.id),solved=room.is_puzzle_solved,ph=room.photo_url;
+ const move=p=>{if(solved)return;const e=tiles.indexOf(8);if(!nb(e).includes(p))return;const n=[...tiles];[n[e],n[p]]=[n[p],n[e]];
+  if(n.every((v,i)=>v==i))up({tiles:n,is_puzzle_solved:true,ev:'solved'});else up({tiles:n})};
+ const bg=v=>ph?{backgroundImage:`url(${ph})`,backgroundSize:'300% 300%',backgroundPosition:`${(v%3)*50}% ${((v/3)|0)*50}%`}:{background:`hsl(${v*40},70%,50%)`};
+ return html`<div class="text-center"><p class="mb-3 opacity-80">${t('solve')}</p>
+  <div class=${'mx-auto grid grid-cols-3 gap-1 w-[min(88vw,360px)] aspect-square p-2 '+(solved?'glass fade':'glass')} style=${solved?{boxShadow:'0 0 60px var(--a)'}:{}}>
+   ${tiles.map((v,i)=>html`<button key=${i} onClick=${()=>move(i)} class="rounded-lg text-2xl font-bold transition-all" style=${{...(v==8&&!solved?{visibility:'hidden'}:bg(v)),border:solved?'none':'1px solid rgba(255,255,255,.3)'}}>${!ph&&v!=8?v+1:''}</button>`)}
+  </div>
+  ${solved&&html`<div class="mt-5 max-w-md mx-auto fade">${room.voice_url&&html`<${Viz} src=${room.voice_url}/>`}<${Env} note=${room.secret_note} t=${t}/></div>`}</div>`}
+
+function Vault({room,up,t,pin}){
+ const d=room.dial||[0,0,0,0],open=room.is_vault_unlocked,[bad,setBad]=useState(0);
+ const turn=(i,s)=>{const n=[...d];n[i]=(n[i]+s+10)%10;up({dial:n})};
+ const tryIt=()=>{if(d.join('')==pin)up({is_vault_unlocked:true,ev:'unlocked'});else{setBad(b=>b+1)}};
+ return html`<div class="text-center"><p class="mb-3 opacity-80">${open?t('opened'):t('dial')}</p>
+  <div class="relative mx-auto w-[min(88vw,340px)] rounded-3xl p-5" style=${{background:'linear-gradient(145deg,#475569,#1e293b)',boxShadow:open?'0 0 90px 20px #fbbf24':'inset 0 0 30px #000',animation:bad?'shake .4s':'none'}} key=${bad}>
+   ${open?html`<div class="py-8 fade" style="animation:beam 1s infinite alternate"><div class="text-7xl">💎</div><p class="mt-2 font-bold">${room.sender_name} ❤ ${room.receiver_name}</p></div>`
+   :html`<div class="flex justify-center gap-2">${d.map((v,i)=>html`<div key=${i} class="flex flex-col items-center gap-1">
+     <button onClick=${()=>turn(i,1)} class="text-xl">▲</button>
+     <div class="w-12 h-14 grid place-items-center rounded-full text-2xl font-bold text-amber-900" style="background:radial-gradient(circle at 30% 30%,#fde68a,#b45309);box-shadow:0 4px 10px #000a">${v}</div>
+     <button onClick=${()=>turn(i,-1)} class="text-xl">▼</button></div>`)}</div>
+    <button class="btn mt-4" onClick=${tryIt}>🔒 ${t('unlock')}</button>${bad>0&&html`<p class="text-red-300 text-sm mt-2">${t('wrong')}</p>`}`}
+  </div></div>`}
+
+function Card({room,t}){
+ const r=useRef(),[img,setImg]=useState(''),o=OCC[room.occasion];
+ const gen=()=>html2canvas(r.current,{scale:2,backgroundColor:'#0b1020',useCORS:true});
+ const dl=async()=>{const c=await gen(),u=c.toDataURL('image/png');setImg(u);const a=document.createElement('a');a.href=u;a.download='celebration-card.png';a.click()};
+ const sh=async()=>{const c=await gen();setImg(c.toDataURL('image/png'));c.toBlob(async b=>{const f=new File([b],'celebration.png',{type:'image/png'}),x=`${t('congrats')} ${room.receiver_name}! ${o.e}`;
+  try{if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f],text:x});else await navigator.share({title:x,text:x,url:location.href})}catch(e){}})};
+ return html`<div class="text-center">
+  <div ref=${r} class="mx-auto w-[min(88vw,340px)] p-4 rounded-3xl" style=${{background:`linear-gradient(135deg,${o.c[0]},${o.c[1]})`}}>
+   <div class="rounded-2xl p-4" style="background:#0b1020">
+    <div class="inline-block px-3 py-1 rounded-full text-xs font-bold" style=${{background:o.c[0],color:'#111'}}>${o.e} ${t(room.occasion)}</div>
+    <div class="mt-3 mx-auto w-48 h-48 rounded-2xl grid place-items-center text-7xl overflow-hidden" style=${{border:'4px solid '+o.c[1],background:room.photo_url?`url(${room.photo_url}) center/cover`:'#1e293b'}}>${room.photo_url?'':o.e}</div>
+    <h3 class="mt-3 text-xl font-bold">${t('congrats')} ${room.receiver_name}!</h3>
+    <p class="opacity-80">${t('from')}: ${room.sender_name}</p>
+    <p class="text-xs opacity-60 mt-2">${new Date().toLocaleString()}</p></div></div>
+  <div class="mt-4 flex gap-3 justify-center"><button class="btn" onClick=${dl}>⬇️ ${t('save')}</button><button class="btn" onClick=${sh}>📤 ${t('share')}</button></div>
+  ${img&&html`<div class="mt-4"><p class="text-sm opacity-70">${t('hold')}</p><img src=${img} class="mx-auto mt-2 max-w-[min(88vw,340px)] rounded-xl"/></div>`}</div>`}
+
+/* ---------- room shell ---------- */
+function Room({id,t,lang}){
+ const{room,up,live}=useRoom(id),[go,setGo]=useState(false),[tab,setTab]=useState(null),[mute,setMute]=useState(false);
+ if(room===null)return html`<div class="min-h-screen grid place-items-center text-5xl animate-pulse">🎁</div>`;
+ if(room===false)return html`<div class="min-h-screen grid place-items-center">${t('nf')}</div>`;
+ const o=OCC[room.occasion],all=room.selected_modes||[],modes=all.filter(m=>!m.startsWith('pin:')),pin=(all.find(m=>m.startsWith('pin:'))||'pin:0000').slice(4);
+ const tabs=[...modes,'card'],cur=tab||tabs[0];
+ const start=()=>{ac();bgm(room.occasion,true);setGo(true)};
+ const bg={'--a':o.c[0],'--b':o.c[1],background:`radial-gradient(circle at 15% 10%,${o.c[0]}44,transparent 50%),radial-gradient(circle at 85% 90%,${o.c[1]}44,transparent 50%),#0b1020`};
+ return html`<div class="min-h-screen" style=${bg}>
+  ${!go?html`<div class="min-h-screen grid place-items-center p-4"><div class="glass p-8 max-w-md text-center fade">
+    <div class="text-6xl mb-4" style="animation:float 3s infinite">${o.e}</div>
+    <h1 class="text-2xl font-bold leading-snug">${t('greet',room.receiver_name)}</h1>
+    <p class="mt-2 opacity-80">${t('sub',t(room.occasion))}</p>
+    <button onClick=${start} class="btn mt-6 text-lg">${t('start')} / শুরু করুন</button></div></div>`
+  :html`<div class="max-w-xl mx-auto p-4 fade">
+    <div class="flex items-center justify-between mb-4 text-sm"><span class="opacity-70">● ${live?t('sync'):t('local')}</span>
+     <button onClick=${()=>{bgm(room.occasion,mute);setMute(!mute)}} class="text-xl">${mute?'🔇':'🔊'}</button></div>
+    <div class="flex gap-2 justify-center flex-wrap mb-5">${tabs.map(m=>html`<button key=${m} onClick=${()=>setTab(m)} class=${'px-4 py-1.5 rounded-full text-sm border '+(m==cur?'btn border-transparent':'border-white/30 bg-white/10')}>${m=='cake'?o.e+' ':''}${t(m)}</button>`)}</div>
+    <div class="glass p-5" key=${cur}>
+     ${cur=='cake'&&html`<${Stage} room=${room} up=${up} t=${t}/>`}
+     ${cur=='puzzle'&&html`<${Puzzle} room=${room} up=${up} t=${t}/>`}
+     ${cur=='vault'&&html`<${Vault} room=${room} up=${up} t=${t} pin=${pin}/>`}
+     ${cur=='card'&&html`<${Card} room=${room} t=${t}/>`}
+    </div></div>`}</div>`}
+
+/* ---------- sender setup ---------- */
+function Setup({t,notify,onOpen}){
+ const[f,setF]=useState({s:'',r:'',occ:'birthday',note:'',pin:'1234',modes:{cake:true,puzzle:true,vault:true},photo:'',voice:''}),[id,setId]=useState(''),[rc,setRc]=useState(null);
+ const set=(k,v)=>setF(x=>({...x,[k]:v}));
+ const link=()=>location.href.split('#')[0]+'#'+id;
+ const recToggle=async()=>{if(rc){rc.stop();return}try{const s=await navigator.mediaDevices.getUserMedia({audio:true}),m=new MediaRecorder(s),ch=[];
+  m.ondataavailable=e=>ch.push(e.data);m.onstop=async()=>{s.getTracks().forEach(x=>x.stop());set('voice',await b64(new Blob(ch)));setRc(null)};m.start();setRc(m)}catch(e){}};
+ const create=async()=>{if(!f.s||!f.r)return notify(t('need'));
+  const modes=Object.keys(f.modes).filter(k=>f.modes[k]),nid=OCC[f.occ].p+'-'+(1000+Math.floor(Math.random()*9000));
+  const row={id:nid,sender_name:f.s,receiver_name:f.r,occasion:f.occ,selected_modes:[...modes,'pin:'+f.pin],secret_note:f.note,photo_url:f.photo,voice_url:f.voice,is_candle_lit:false,is_puzzle_solved:false,is_vault_unlocked:false};
+  try{localStorage.setItem('room_'+nid,JSON.stringify(row))}catch(e){}
+  try{if(sb)await sb.from('rooms').insert(row)}catch(e){}
+  setId(nid)};
+ const copy=async()=>{try{await navigator.clipboard.writeText(link())}catch(e){}notify(t('copied'))};
+ if(id)return html`<div class="min-h-screen grid place-items-center p-4"><div class="glass p-6 max-w-md w-full text-center fade">
+  <div class="text-6xl">🎁</div><p class="mt-3 break-all text-sm opacity-80">${link()}</p>
+  <div class="mt-5 flex gap-3 justify-center flex-wrap"><button class="btn" onClick=${copy}>🔗 ${t('copy')}</button><button class="btn" onClick=${()=>onOpen(id)}>${t('open')}</button></div></div></div>`;
+ return html`<div class="max-w-xl mx-auto p-4 pt-16"><div class="glass p-5 space-y-4 fade">
+  <h1 class="text-2xl font-bold">🎁 ${t('title')}</h1>
+  <div class="grid sm:grid-cols-2 gap-3"><input class=${inp} placeholder=${t('sName')} value=${f.s} onInput=${e=>set('s',e.target.value)}/><input class=${inp} placeholder=${t('rName')} value=${f.r} onInput=${e=>set('r',e.target.value)}/></div>
+  <div><p class="text-sm mb-1 opacity-70">${t('occ')}</p><div class="grid grid-cols-2 gap-2">${Object.keys(OCC).map(k=>html`<button key=${k} onClick=${()=>set('occ',k)} class=${'rounded-xl px-3 py-2 text-sm border '+(f.occ==k?'btn border-transparent':'border-white/30 bg-white/10')}>${OCC[k].e} ${t(k)}</button>`)}</div></div>
+  <textarea rows=4 class=${inp} placeholder=${t('note')} value=${f.note} onInput=${e=>set('note',e.target.value)}/>
+  <div class="grid sm:grid-cols-2 gap-3 text-sm">
+   <label class="block">${t('photo')}<input type="file" accept="image/*" class="block w-full mt-1 text-xs" onChange=${async e=>e.target.files[0]&&set('photo',await sq(e.target.files[0]))}/>${f.photo&&html`<img src=${f.photo} class="w-16 h-16 rounded-lg mt-1 object-cover"/>`}</label>
+   <div>${t('voice')}<div class="flex gap-2 items-center mt-1"><button class="btn !py-1 !px-3 text-xs" onClick=${recToggle}>${rc?'⏹ '+t('stop'):'🎙 '+t('rec')}</button>${f.voice&&'✅'}</div>
+    <input type="file" accept="audio/*" class="block w-full mt-1 text-xs" onChange=${async e=>{const x=e.target.files[0];x&&x.size<1500000&&set('voice',await b64(x))}}/></div></div>
+  <div><p class="text-sm mb-1 opacity-70">${t('mods')}</p><div class="flex gap-2 flex-wrap">${['cake','puzzle','vault'].map(k=>html`<button key=${k} onClick=${()=>setF(x=>({...x,modes:{...x.modes,[k]:!x.modes[k]}}))} class=${'rounded-full px-4 py-1.5 text-sm border '+(f.modes[k]?'btn border-transparent':'border-white/30 bg-white/10')}>${t(k)}</button>`)}</div></div>
+  <label class="block text-sm">${t('pin')}<input class=${inp+' mt-1'} inputmode="numeric" maxlength=4 value=${f.pin} onInput=${e=>set('pin',e.target.value.replace(/\D/g,'').padEnd(0))}/></label>
+  <button class="btn w-full" onClick=${create}>✨ ${t('create')}</button></div></div>`}
+
+/* ---------- app ---------- */
+function App(){
+ const[lang,setLang]=useState('bn'),[rid,setRid]=useState(location.hash.slice(1)),[toast,setToast]=useState('');
+ useEffect(()=>{const h=()=>setRid(location.hash.slice(1));addEventListener('hashchange',h);return()=>removeEventListener('hashchange',h)},[]);
+ const t=(k,...a)=>{const v=T[lang][k];return typeof v=='function'?v(...a):v};
+ const notify=m=>{setToast(m);setTimeout(()=>setToast(''),2500)};
+ const open=id=>{location.hash=id;setRid(id)};
+ return html`<div>
+  <${Confetti}/>
+  <button onClick=${()=>setLang(lang=='bn'?'en':'bn')} class="fixed top-3 right-3 z-40 glass !rounded-full px-4 py-1.5 text-sm" style="margin-top:env(safe-area-inset-top,0px)">🌐 ${t('lang')}</button>
+  ${rid?html`<${Room} key=${rid} id=${rid} t=${t} lang=${lang}/>`:html`<${Setup} t=${t} notify=${notify} onOpen=${open}/>`}
+  ${toast&&html`<div class="fixed bottom-6 inset-x-0 z-50 grid place-items-center fade"><div class="glass px-5 py-2 text-sm">${toast}</div></div>`}</div>`}
+ReactDOM.createRoot(document.getElementById('root')).render(html`<${App}/>`);
+</script></body></html>
