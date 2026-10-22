@@ -1,265 +1,185 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Surprise Room</title>
+<title>A Special Surprise</title>
+<meta name="color-scheme" content="dark">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Dancing+Script:wght@600&family=Galada&family=Hind+Siliguri:wght@400;600&family=Noto+Serif+Bengali:wght@400;600&family=Playfair+Display:wght@500;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-<script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
 <style>
-:root{color-scheme:dark;--a:#f472b6;--b:#a78bfa;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-html,body{margin:0;background:#0b1020;color:#f5f5ff;font-family:'Segoe UI','Noto Sans Bengali',system-ui,sans-serif;overflow-x:hidden}
-.glass{background:rgba(255,255,255,.09);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.2);border-radius:1.5rem;box-shadow:0 20px 60px rgba(0,0,0,.4)}
-.btn{background:linear-gradient(90deg,var(--a),var(--b));color:#111;font-weight:700;padding:.6rem 1.4rem;border-radius:999px;transition:transform .15s}
-.btn:active{transform:scale(.95)}
-.fade{animation:fade .7s ease both}
-@keyframes fade{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
-@keyframes flick{from{transform:scale(1) rotate(-4deg)}to{transform:scale(1.2) rotate(4deg)}}
-@keyframes rise{0%{opacity:.9;transform:translateY(0)}100%{opacity:0;transform:translateY(-90px) scale(2)}}
-@keyframes float{50%{transform:translateY(-8px) rotateY(12deg)}}
-@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
-@keyframes beam{from{opacity:.4}to{opacity:1}}
-@keyframes glow{from{box-shadow:0 0 12px var(--a),0 0 30px var(--a)}to{box-shadow:0 0 30px var(--b),0 0 70px var(--b)}}
-@keyframes drift{0%{transform:translateY(105vh) rotate(0)}100%{transform:translateY(-15vh) rotate(360deg)}}
-.glow{animation:glow 1.2s ease-in-out infinite alternate}
+:root{color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{height:100%;margin:0;background:#05050c;color:#f5ecd7;font-family:'Poppins',sans-serif;overflow-x:hidden}
+body{background:radial-gradient(ellipse at top,#1b1233 0%,#07070f 60%,#000 100%)}
+.shimmer{position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.7) 50%,transparent 70%);transform:translateX(-100%);animation:sh 2.6s infinite}
+@keyframes sh{to{transform:translateX(100%)}}
+@keyframes pg{0%,100%{box-shadow:0 0 20px rgba(251,191,36,.35)}50%{box-shadow:0 0 44px rgba(251,191,36,.7)}}
+.pg{animation:pg 2.4s infinite}
+@keyframes fl{0%,100%{transform:scale(1,1) rotate(-2deg)}50%{transform:scale(.88,1.15) rotate(3deg)}}
+.flame{animation:fl .35s infinite;transform-origin:bottom;filter:drop-shadow(0 0 10px #fbbf24)}
+@keyframes fy{0%,100%{transform:translateY(0) rotateY(0)}50%{transform:translateY(-14px) rotateY(25deg)}}
+.float{animation:fy 4s ease-in-out infinite;filter:drop-shadow(0 0 30px rgba(251,191,36,.7))}
+@keyframes sm{from{opacity:.7;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(-70px) scale(2.4)}}
+.smoke{animation:sm 2.2s ease-out forwards}
+@keyframes bar{0%,100%{height:6px}50%{height:34px}}
+.bar{width:5px;border-radius:3px;background:#fbbf24;animation:bar .7s infinite}
+@keyframes pop{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+.pop{animation:pop .6s ease both}
 </style></head>
 <body><div id="root"></div>
 <script>
-const {useState,useEffect,useRef,useCallback}=React;
-/* React #62 fix: React needs style as an object, so convert style="a:b;c:d" strings written in templates */
-const h=(t,p,...c)=>{if(p&&typeof p.style=='string'){p.style=Object.fromEntries(p.style.split(';').filter(s=>s.includes(':')).map(s=>{const i=s.indexOf(':'),k=s.slice(0,i).trim(),v=s.slice(i+1).trim();return[k.startsWith('--')?k:k.replace(/-([a-z])/g,(_,x)=>x.toUpperCase()),v]}))}return React.createElement(t,p,...c)};
-const html=htm.bind(h);
+const {useState,useEffect,useRef}=React;const h=htm.bind(React.createElement);
+/* ---------- Supabase (credentials as supplied) ---------- */
 const SB_URL='https://wyrzddptgwlsdynjhuqg.supabase.co',SB_KEY='sb_publishable_y9CDQ_cnfa63eIuNJ7vz0w_qEkOkycH';
 let sb=null;try{sb=window.supabase.createClient(SB_URL,SB_KEY)}catch(e){}
-
-const OCC={
- birthday:{e:'🎂',p:'bd',c:['#f472b6','#a78bfa'],fx:['🎉','🎈','🎂']},
- achievement:{e:'🏆',p:'ac',c:['#fbbf24','#f97316'],fx:['🏆','⭐','🥂']},
- wedding:{e:'💍',p:'wd',c:['#fda4af','#f0abfc'],fx:['💖','💍','🌸']},
- graduation:{e:'🎓',p:'gr',c:['#38bdf8','#818cf8'],fx:['🎓','📜','✨']}};
-const T={
-en:{title:'Surprise Room',sName:'Your name',rName:'Receiver’s name',occ:'Occasion',note:'Secret note / letter',photo:'Photo (for the puzzle)',voice:'Voice wish',rec:'Record',stop:'Stop',mods:'Modules',cake:'Celebration',puzzle:'Puzzle',vault:'Vault',card:'Souvenir',pin:'Vault code (4 digits)',create:'Create Surprise',copy:'Copy Surprise Link',copied:'Surprise link copied!',open:'Open room',start:'Start',need:'Please enter both names',
-birthday:'Birthday',achievement:'Achievement',wedding:'Wedding / Anniversary',graduation:'Graduation',
-greet:r=>`✨ A Special Surprise for ${r}! ✨`,sub:()=>'Someone special created a magical journey for you...',
-drag:'Drag the flame onto the candles',blow:'Blow into the mic (or tap)',tap:'Tap to blow',mic:'Listening…',done:'Hooray! Make a wish!',relight:'Relight',
-solve:'Slide the tiles to rebuild the photo',env:'Tap the envelope to read the letter',dial:'Turn the brass dials to the secret code',unlock:'Unlock',wrong:'Wrong code, try again',opened:'The vault is open! 💎',
-save:'Download card',share:'Share',congrats:'Congratulations',from:'From',hold:'Long-press the image to save it',nf:'Room not found',sync:'Live sync',local:'Local sync',lang:'বাংলা'},
-bn:{title:'সারপ্রাইজ রুম',sName:'আপনার নাম',rName:'প্রাপকের নাম',occ:'উপলক্ষ',note:'গোপন বার্তা / চিঠি',photo:'ছবি (পাজলের জন্য)',voice:'ভয়েস উইশ',rec:'রেকর্ড',stop:'থামান',mods:'মডিউল',cake:'উদযাপন',puzzle:'পাজল',vault:'ভল্ট',card:'স্মারক',pin:'ভল্ট কোড (৪ সংখ্যা)',create:'সারপ্রাইজ তৈরি করুন',copy:'সারপ্রাইজ লিংক কপি করুন',copied:'সারপ্রাইজ লিংক কপি হয়েছে!',open:'রুম খুলুন',start:'শুরু করুন',need:'দুটি নামই লিখুন',
-birthday:'জন্মদিন',achievement:'সাফল্য',wedding:'বিয়ে / বার্ষিকী',graduation:'গ্র্যাজুয়েশন',
-greet:r=>`✨ ${r}-এর জন্য বিশেষ সারপ্রাইজ! ✨`,sub:()=>'বিশেষ কেউ আপনার জন্য একটি জাদুকরী যাত্রা সাজিয়েছে...',
-drag:'আগুনটি টেনে মোমবাতিতে ধরান',blow:'মাইকে ফুঁ দিন (বা ট্যাপ করুন)',tap:'ট্যাপ করে ফুঁ দিন',mic:'শুনছি…',done:'হুররে! একটি ইচ্ছা করুন!',relight:'আবার জ্বালান',
-solve:'টাইল সরিয়ে ছবিটি সাজান',env:'চিঠি পড়তে খামে ট্যাপ করুন',dial:'পিতলের ডায়াল ঘুরিয়ে গোপন কোড দিন',unlock:'খুলুন',wrong:'ভুল কোড, আবার চেষ্টা করুন',opened:'ভল্ট খুলে গেছে! 💎',
-save:'কার্ড ডাউনলোড',share:'শেয়ার',congrats:'অভিনন্দন',from:'প্রেরক',hold:'ছবিটি সেভ করতে চেপে ধরুন',nf:'রুম পাওয়া যায়নি',sync:'লাইভ সিঙ্ক',local:'লোকাল সিঙ্ক',lang:'English'}};
-
-/* ---------- audio ---------- */
-let AC;const ac=()=>{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();return AC};
-const TUNES={
- birthday:[[392,.3],[392,.15],[440,.5],[392,.5],[523,.5],[494,.9],[392,.3],[392,.15],[440,.5],[392,.5],[587,.5],[523,.9]],
- achievement:[[523,.15],[523,.15],[523,.15],[523,.4],[415,.4],[466,.4],[523,.2],[466,.1],[523,.9]],
- wedding:[[262,.4],[330,.4],[392,.4],[523,.8],[392,.4],[330,.4],[440,.4],[523,.8]],
- graduation:[[392,.4],[392,.4],[440,.4],[494,.6],[523,.4],[587,.4],[659,.9]]};
-const dur=n=>TUNES[n].reduce((s,x)=>s+x[1],0)*1000;
-function tune(n,vol=.15){try{const a=ac();let t=a.currentTime+.05;const g=a.createGain();g.gain.value=vol;g.connect(a.destination);
- TUNES[n].forEach(([f,d])=>{const o=a.createOscillator();o.type=n=='achievement'?'sawtooth':'triangle';o.frequency.value=f;const e=a.createGain();e.gain.setValueAtTime(0,t);e.gain.linearRampToValueAtTime(1,t+.03);e.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(e);e.connect(g);o.start(t);o.stop(t+d+.05);t+=d})}catch(e){}}
-let bgT;function bgm(n,on){clearInterval(bgT);if(on){tune(n,.06);bgT=setInterval(()=>tune(n,.06),dur(n)+2500)}}
-const boom=o=>window.dispatchEvent(new CustomEvent('boom',{detail:OCC[o].fx}));
-
+/* ---------- constants ---------- */
+const GOLD='bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent';
+const GLASS='backdrop-blur-xl bg-black/40 border border-amber-300/30 shadow-[0_0_50px_rgba(251,191,36,0.2)] rounded-3xl';
+const IN='w-full rounded-xl bg-white/10 border border-amber-300/30 px-3 py-2 text-white outline-none focus:border-amber-300 text-sm';
+const OCC={birthday:['🎂','Birthday'],achievement:['🏆','Achievement'],wedding:['💍','Wedding'],graduation:['🎓','Graduation']};
+const FONTS={chakrabak:"'Galada',cursive",vector_bangla:"'Hind Siliguri',sans-serif",kalpurush:"'Noto Serif Bengali',serif",cursive_en:"'Dancing Script',cursive",serif_en:"'Playfair Display',serif",modern_en:"'Poppins',sans-serif"};
+const ENV={vintage:'bg-gradient-to-br from-amber-100 to-amber-300 text-amber-950',royal_gold:'bg-gradient-to-br from-indigo-950 to-blue-900 text-amber-200 border-2 border-amber-400',romantic:'bg-gradient-to-br from-pink-100 to-rose-200 text-rose-900',minimal_glass:'bg-white/10 backdrop-blur-xl text-white border border-white/30'};
+const SEAL={vintage:'🔴',royal_gold:'👑',romantic:'💖',minimal_glass:'🔮'};
+/* ---------- audio engine (Web Audio synth) ---------- */
+let AC,tuneT,voiceEl;
+function ctx(){AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();return AC}
+function beep(f,d=.3,type='sine',v=.12){try{const a=ctx(),o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+d);o.connect(g).connect(a.destination);o.start();o.stop(a.currentTime+d)}catch(e){}}
+const TUNES={birthday:[0,0,2,0,5,4,0,0,2,0,7,5,0,0,12,9,5,4,2,10,10,9,5,7,5],achievement:[0,0,0,0,5,7,12,12,7,12],wedding:[0,4,7,12,7,4,2,5,9,14,9,5],graduation:[0,7,12,11,9,7,5,4,2,0,7,12]};
+const WAVE={birthday:'triangle',achievement:'sawtooth',wedding:'sine',graduation:'square'};
+function stopTune(){clearTimeout(tuneT);if(voiceEl){voiceEl.pause();voiceEl=null}}
+function playTune(o){stopTune();const s=TUNES[o]||TUNES.birthday;let i=0;const st=()=>{beep(261.6*Math.pow(2,s[i%s.length]/12),.5,WAVE[o],.06);i++;tuneT=setTimeout(st,o==='wedding'?520:380)};st()}
+function playWish(r){stopTune();if(r.voice_url){voiceEl=new Audio(r.voice_url);voiceEl.play().catch(()=>playTune(r.occasion))}else playTune(r.occasion)}
 /* ---------- helpers ---------- */
-const sq=f=>new Promise(r=>{const i=new Image();i.onload=()=>{const m=Math.min(i.width,i.height),c=document.createElement('canvas');c.width=c.height=480;c.getContext('2d').drawImage(i,(i.width-m)/2,(i.height-m)/2,m,m,0,0,480,480);r(c.toDataURL('image/jpeg',.8))};i.src=URL.createObjectURL(f)});
-const b64=f=>new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result);x.readAsDataURL(f)});
-const nb=e=>{const r=[],x=e%3,y=(e/3)|0;if(x>0)r.push(e-1);if(x<2)r.push(e+1);if(y>0)r.push(e-3);if(y<2)r.push(e+3);return r};
-function seeded(id){let s=0;for(const ch of id)s=(s*31+ch.charCodeAt(0))>>>0;const R=()=>(s=(s*1664525+1013904223)>>>0)/4294967296;
- let t=[0,1,2,3,4,5,6,7,8],e=8;for(let i=0;i<90;i++){const n=nb(e),j=n[(R()*n.length)|0];[t[e],t[j]]=[t[j],t[e]];e=j}return t}
-const inp='w-full rounded-xl bg-white/10 border border-white/20 px-3 py-2 outline-none focus:border-white/60';
-
-/* ---------- confetti ---------- */
-function Confetti(){const r=useRef();useEffect(()=>{const c=r.current,x=c.getContext('2d');let P=[],raf;
- const fit=()=>{c.width=innerWidth;c.height=innerHeight};fit();addEventListener('resize',fit);
- const L=()=>{x.clearRect(0,0,c.width,c.height);P=P.filter(p=>p.y<c.height+30);P.forEach(p=>{p.vy+=.12;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);if(p.t){x.font='22px serif';x.fillText(p.t,0,0)}else{x.fillStyle=p.c;x.fillRect(-4,-3,8,6)}x.restore()});raf=requestAnimationFrame(L)};L();
- const on=e=>{const em=e.detail||[];for(let i=0;i<150;i++){const a=Math.random()*6.28,s=4+Math.random()*9;P.push({x:c.width/2,y:c.height*.45,vx:Math.cos(a)*s,vy:Math.sin(a)*s-6,r:0,vr:Math.random()*.3-.15,c:`hsl(${Math.random()*360},90%,60%)`,t:i%3==0?em[i%em.length]:null})}};
- addEventListener('boom',on);return()=>{cancelAnimationFrame(raf);removeEventListener('boom',on);removeEventListener('resize',fit)}},[]);
- return html`<canvas ref=${r} class="fixed inset-0 pointer-events-none z-50"/>`}
-
-/* ---------- realtime room ---------- */
-function useRoom(id){
- const[room,setRoom]=useState(null),[live,setLive]=useState(false),ch=useRef(),bc=useRef(),rm=useRef();rm.current=room;
- const apply=useCallback(p=>{setRoom(r=>r?{...r,...p}:r);if(p.ev&&rm.current){boom(rm.current.occasion);tune(rm.current.occasion,.2)}},[]);
- useEffect(()=>{let on=1;(async()=>{let r=null;
-  try{if(sb){const{data}=await sb.from('rooms').select('*').eq('id',id).maybeSingle();r=data}}catch(e){}
-  if(!r)try{r=JSON.parse(localStorage.getItem('room_'+id))}catch(e){}
-  if(on)setRoom(r||false)})();
-  try{if(sb)ch.current=sb.channel('room_'+id).on('broadcast',{event:'s'},m=>apply(m.payload)).subscribe(s=>setLive(s==='SUBSCRIBED'))}catch(e){}
-  try{bc.current=new BroadcastChannel('room_'+id);bc.current.onmessage=m=>apply(m.data)}catch(e){}
-  return()=>{on=0;try{ch.current&&sb.removeChannel(ch.current);bc.current&&bc.current.close()}catch(e){}}},[id]);
- const up=useCallback(p=>{apply(p);
-  try{ch.current&&ch.current.send({type:'broadcast',event:'s',payload:p})}catch(e){}
-  try{bc.current&&bc.current.postMessage(p)}catch(e){}
-  const db={};['is_candle_lit','is_puzzle_solved','is_vault_unlocked'].forEach(k=>{if(k in p)db[k]=p[k]});
-  try{if(sb&&Object.keys(db).length)sb.from('rooms').update(db).eq('id',id).then(()=>{})}catch(e){}
-  try{localStorage.setItem('room_'+id,JSON.stringify({...rm.current,...p,ev:undefined}))}catch(e){}},[id]);
- return{room,up,live}}
-
-/* ---------- modules ---------- */
-function Stage({room,up,t}){
- const lit=room.is_candle_lit,blown=room.blown,o=OCC[room.occasion],bd=room.occasion=='birthday';
- const cake=useRef(),[drag,setDrag]=useState(null),[mic,setMic]=useState(false);
- useEffect(()=>{if(!drag)return;const mv=e=>setDrag({x:e.clientX,y:e.clientY});
-  const end=e=>{const r=cake.current.getBoundingClientRect();if(e.clientX>r.left-40&&e.clientX<r.right+40&&e.clientY>r.top-50&&e.clientY<r.top+r.height*.55)up({is_candle_lit:true,blown:false});setDrag(null)};
-  addEventListener('pointermove',mv);addEventListener('pointerup',end);return()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',end)}},[!!drag]);
- const blow=()=>up({is_candle_lit:false,blown:true,ev:'blown'});
- const listen=async()=>{try{const s=await navigator.mediaDevices.getUserMedia({audio:true}),c=ac(),n=c.createAnalyser();c.createMediaStreamSource(s).connect(n);
-  const d=new Uint8Array(n.fftSize);setMic(true);let h=0;const L=()=>{n.getByteTimeDomainData(d);let m=0;d.forEach(v=>m=Math.max(m,Math.abs(v-128)));h=m>60?h+1:0;
-   if(h>6){s.getTracks().forEach(x=>x.stop());setMic(false);blow();return}requestAnimationFrame(L)};L()}catch(e){}};
- return html`<div class="text-center select-none">
-  <p class="mb-2 opacity-80">${!lit&&!blown?t('drag'):lit?(mic?t('mic'):t('blow')):t('done')}</p>
-  <div ref=${cake} class="relative inline-block pt-12">
-   <div class="absolute top-0 inset-x-0 flex justify-center gap-4 text-3xl h-12">
-    ${lit&&(bd?[0,1,2]:[0]).map(i=>html`<span key=${i} style="animation:flick .3s infinite alternate">${bd?'🔥':'✨'}</span>`)}
-    ${blown&&[0,1,2].map(i=>html`<span key=${'s'+i} style=${{animation:'rise 2s forwards',animationDelay:i*.25+'s',opacity:0}}>💨</span>`)}
-   </div>
-   <div class="text-[8rem] sm:text-[10rem] leading-none" style="filter:drop-shadow(0 25px 30px rgba(0,0,0,.6));animation:float 3s ease-in-out infinite">${o.e}</div>
-  </div>
-  <div class="mt-5 flex justify-center gap-3 flex-wrap">
-   ${!lit&&!blown&&html`<div onPointerDown=${e=>{e.preventDefault();setDrag({x:e.clientX,y:e.clientY})}} class="text-6xl cursor-grab touch-none">🔥</div>`}
-   ${lit&&html`<button class="btn" onClick=${listen}>🎤 ${t('blow').split(' (')[0]}</button><button class="btn" onClick=${blow}>${t('tap')}</button>`}
-   ${blown&&html`<button class="btn" onClick=${()=>up({is_candle_lit:false,blown:false})}>${t('relight')}</button>`}
-  </div>
-  ${drag&&html`<div class="fixed text-5xl pointer-events-none z-40" style=${{left:drag.x-24,top:drag.y-24}}>🔥</div>`}
- </div>`}
-
-function Viz({src}){const a=useRef(),c=useRef();useEffect(()=>{const el=a.current;let an,raf;
- try{const x=ac(),s=x.createMediaElementSource(el);an=x.createAnalyser();an.fftSize=64;s.connect(an);an.connect(x.destination)}catch(e){}
- const d=new Uint8Array(32),g=c.current.getContext('2d');
- const L=()=>{raf=requestAnimationFrame(L);g.clearRect(0,0,300,60);if(an){an.getByteFrequencyData(d);d.forEach((v,i)=>{g.fillStyle='#fbbf24';g.fillRect(i*9.4,60-v/4.5,6,v/4.5)})}};L();
- el.play().catch(()=>{});return()=>cancelAnimationFrame(raf)},[]);
- return html`<div><canvas ref=${c} width=300 height=60 class="mx-auto max-w-full"/><audio ref=${a} src=${src} controls class="w-full mt-2"/></div>`}
-
-function Env({note,t}){const[o,setO]=useState(0);
- return html`<div class="text-center mt-5"><button onClick=${()=>setO(1)} class=${'text-7xl '+(o?'':'animate-bounce')}>${o?'💌':'✉️'}</button>
- ${o?html`<p class="glass p-4 mt-3 whitespace-pre-wrap text-left fade">${note||'❤'}</p>`:html`<p class="text-sm opacity-70">${t('env')}</p>`}</div>`}
-
-function Puzzle({room,up,t}){
- const tiles=room.tiles||seeded(room.id),solved=room.is_puzzle_solved,ph=room.photo_url;
- const move=p=>{if(solved)return;const e=tiles.indexOf(8);if(!nb(e).includes(p))return;const n=[...tiles];[n[e],n[p]]=[n[p],n[e]];
-  if(n.every((v,i)=>v==i))up({tiles:n,is_puzzle_solved:true,ev:'solved'});else up({tiles:n})};
- const bg=v=>ph?{backgroundImage:`url(${ph})`,backgroundSize:'300% 300%',backgroundPosition:`${(v%3)*50}% ${((v/3)|0)*50}%`}:{background:`hsl(${v*40},70%,50%)`};
- return html`<div class="text-center"><p class="mb-3 opacity-80">${t('solve')}</p>
-  <div class=${'mx-auto grid grid-cols-3 gap-1 w-[min(88vw,360px)] aspect-square p-2 '+(solved?'glass fade':'glass')} style=${solved?{boxShadow:'0 0 60px var(--a)'}:{}}>
-   ${tiles.map((v,i)=>html`<button key=${i} onClick=${()=>move(i)} class="rounded-lg text-2xl font-bold transition-all" style=${{...(v==8&&!solved?{visibility:'hidden'}:bg(v)),border:solved?'none':'1px solid rgba(255,255,255,.3)'}}>${!ph&&v!=8?v+1:''}</button>`)}
-  </div>
-  ${solved&&html`<div class="mt-5 max-w-md mx-auto fade">${room.voice_url&&html`<${Viz} src=${room.voice_url}/>`}<${Env} note=${room.secret_note} t=${t}/></div>`}</div>`}
-
-function Vault({room,up,t,pin}){
- const d=room.dial||[0,0,0,0],open=room.is_vault_unlocked,[bad,setBad]=useState(0);
- const turn=(i,s)=>{const n=[...d];n[i]=(n[i]+s+10)%10;up({dial:n})};
- const tryIt=()=>{if(d.join('')==pin)up({is_vault_unlocked:true,ev:'unlocked'});else{setBad(b=>b+1)}};
- return html`<div class="text-center"><p class="mb-3 opacity-80">${open?t('opened'):t('dial')}</p>
-  <div class="relative mx-auto w-[min(88vw,340px)] rounded-3xl p-5" style=${{background:'linear-gradient(145deg,#475569,#1e293b)',boxShadow:open?'0 0 90px 20px #fbbf24':'inset 0 0 30px #000',animation:bad?'shake .4s':'none'}} key=${bad}>
-   ${open?html`<div class="py-8 fade" style="animation:beam 1s infinite alternate"><div class="text-7xl">💎</div><p class="mt-2 font-bold">${room.sender_name} ❤ ${room.receiver_name}</p></div>`
-   :html`<div class="flex justify-center gap-2">${d.map((v,i)=>html`<div key=${i} class="flex flex-col items-center gap-1">
-     <button onClick=${()=>turn(i,1)} class="text-xl">▲</button>
-     <div class="w-12 h-14 grid place-items-center rounded-full text-2xl font-bold text-amber-900" style="background:radial-gradient(circle at 30% 30%,#fde68a,#b45309);box-shadow:0 4px 10px #000a">${v}</div>
-     <button onClick=${()=>turn(i,-1)} class="text-xl">▼</button></div>`)}</div>
-    <button class="btn mt-4" onClick=${tryIt}>🔒 ${t('unlock')}</button>${bad>0&&html`<p class="text-red-300 text-sm mt-2">${t('wrong')}</p>`}`}
-  </div></div>`}
-
-function Card({room,t}){
- const r=useRef(),[img,setImg]=useState(''),o=OCC[room.occasion];
- const gen=()=>html2canvas(r.current,{scale:2,backgroundColor:'#0b1020',useCORS:true});
- const dl=async()=>{const c=await gen(),u=c.toDataURL('image/png');setImg(u);const a=document.createElement('a');a.href=u;a.download='celebration-card.png';a.click()};
- const sh=async()=>{const c=await gen();setImg(c.toDataURL('image/png'));c.toBlob(async b=>{const f=new File([b],'celebration.png',{type:'image/png'}),x=`${t('congrats')} ${room.receiver_name}! ${o.e}`;
-  try{if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f],text:x});else await navigator.share({title:x,text:x,url:location.href})}catch(e){}})};
- return html`<div class="text-center">
-  <div ref=${r} class="mx-auto w-[min(88vw,340px)] p-4 rounded-3xl" style=${{background:`linear-gradient(135deg,${o.c[0]},${o.c[1]})`}}>
-   <div class="rounded-2xl p-4" style="background:#0b1020">
-    <div class="inline-block px-3 py-1 rounded-full text-xs font-bold" style=${{background:o.c[0],color:'#111'}}>${o.e} ${t(room.occasion)}</div>
-    <div class="mt-3 mx-auto w-48 h-48 rounded-2xl grid place-items-center text-7xl overflow-hidden" style=${{border:'4px solid '+o.c[1],background:room.photo_url?`url(${room.photo_url}) center/cover`:'#1e293b'}}>${room.photo_url?'':o.e}</div>
-    <h3 class="mt-3 text-xl font-bold">${t('congrats')} ${room.receiver_name}!</h3>
-    <p class="opacity-80">${t('from')}: ${room.sender_name}</p>
-    <p class="text-xs opacity-60 mt-2">${new Date().toLocaleString()}</p></div></div>
-  <div class="mt-4 flex gap-3 justify-center"><button class="btn" onClick=${dl}>⬇️ ${t('save')}</button><button class="btn" onClick=${sh}>📤 ${t('share')}</button></div>
-  ${img&&html`<div class="mt-4"><p class="text-sm opacity-70">${t('hold')}</p><img src=${img} class="mx-auto mt-2 max-w-[min(88vw,340px)] rounded-xl"/></div>`}</div>`}
-
-/* ---------- room shell ---------- */
-function Room({id,t,lang}){
- const{room,up,live}=useRoom(id),[go,setGo]=useState(false),[tab,setTab]=useState(null),[mute,setMute]=useState(false);
- if(room===null)return html`<div class="min-h-screen grid place-items-center text-5xl animate-pulse">🎁</div>`;
- if(room===false)return html`<div class="min-h-screen grid place-items-center">${t('nf')}</div>`;
- const o=OCC[room.occasion],all=room.selected_modes||[],modes=all.filter(m=>!m.startsWith('pin:')),pin=(all.find(m=>m.startsWith('pin:'))||'pin:0000').slice(4);
- const tabs=[...modes,'card'],cur=tab||tabs[0];
- const start=()=>{ac();bgm(room.occasion,true);setGo(true)};
- const bg={'--a':o.c[0],'--b':o.c[1],background:`radial-gradient(circle at 15% 10%,${o.c[0]}44,transparent 50%),radial-gradient(circle at 85% 90%,${o.c[1]}44,transparent 50%),#0b1020`};
- return html`<div class="min-h-screen" style=${bg}>
-  ${!go?html`<div class="fixed inset-0 overflow-hidden grid place-items-center p-4 z-30" style=${bg}>
-    ${Array.from({length:16},(_,i)=>html`<span key=${i} class="absolute pointer-events-none" style=${{left:(i*6.5)%100+'%',fontSize:20+(i%4)*8+'px',opacity:.5,animation:`drift ${9+(i%5)*2}s linear ${-i*1.3}s infinite`}}>${o.fx[i%o.fx.length]}</span>`)}
-    <div class="glass p-8 max-w-md w-full text-center fade relative">
-    <div class="text-7xl mb-4" style="animation:float 3s infinite">${o.e}</div>
-    <h1 class="text-2xl sm:text-3xl font-bold leading-snug">${t('greet',room.receiver_name)}</h1>
-    <p class="mt-3 opacity-80">${t('sub')}</p>
-    <button onClick=${start} class="btn glow mt-8 text-lg">${t('start')} / শুরু করুন</button></div></div>`
-  :html`<div class="max-w-xl mx-auto p-4 fade">
-    <div class="flex items-center justify-between mb-4 text-sm"><span class="opacity-70">● ${live?t('sync'):t('local')}</span>
-     <button onClick=${()=>{bgm(room.occasion,mute);setMute(!mute)}} class="text-xl">${mute?'🔇':'🔊'}</button></div>
-    <div class="flex gap-2 justify-center flex-wrap mb-5">${tabs.map(m=>html`<button key=${m} onClick=${()=>setTab(m)} class=${'px-4 py-1.5 rounded-full text-sm border '+(m==cur?'btn border-transparent':'border-white/30 bg-white/10')}>${m=='cake'?o.e+' ':''}${t(m)}</button>`)}</div>
-    <div class="glass p-5" key=${cur}>
-     ${cur=='cake'&&html`<${Stage} room=${room} up=${up} t=${t}/>`}
-     ${cur=='puzzle'&&html`<${Puzzle} room=${room} up=${up} t=${t}/>`}
-     ${cur=='vault'&&html`<${Vault} room=${room} up=${up} t=${t} pin=${pin}/>`}
-     ${cur=='card'&&html`<${Card} room=${room} t=${t}/>`}
-    </div></div>`}</div>`}
-
-/* ---------- sender setup ---------- */
-function Setup({t,notify,onOpen}){
- const[f,setF]=useState({s:'',r:'',occ:'birthday',note:'',pin:'1234',modes:{cake:true,puzzle:true,vault:true},photo:'',voice:''}),[id,setId]=useState(''),[rc,setRc]=useState(null);
- const set=(k,v)=>setF(x=>({...x,[k]:v}));
- const link=()=>roomLink(id);
- const recToggle=async()=>{if(rc){rc.stop();return}try{const s=await navigator.mediaDevices.getUserMedia({audio:true}),m=new MediaRecorder(s),ch=[];
-  m.ondataavailable=e=>ch.push(e.data);m.onstop=async()=>{s.getTracks().forEach(x=>x.stop());set('voice',await b64(new Blob(ch)));setRc(null)};m.start();setRc(m)}catch(e){}};
- const create=async()=>{if(!f.s||!f.r)return notify(t('need'));
-  const modes=Object.keys(f.modes).filter(k=>f.modes[k]),nid=OCC[f.occ].p+'-'+(1000+Math.floor(Math.random()*9000));
-  const row={id:nid,sender_name:f.s,receiver_name:f.r,occasion:f.occ,selected_modes:[...modes,'pin:'+f.pin],secret_note:f.note,photo_url:f.photo,voice_url:f.voice,is_candle_lit:false,is_puzzle_solved:false,is_vault_unlocked:false};
-  try{localStorage.setItem('room_'+nid,JSON.stringify(row))}catch(e){}
-  try{if(sb)await sb.from('rooms').insert(row)}catch(e){}
-  setId(nid)};
- const copy=async()=>{try{await navigator.clipboard.writeText(link())}catch(e){}notify(t('copied'))};
- if(id)return html`<div class="min-h-screen grid place-items-center p-4"><div class="glass p-6 max-w-md w-full text-center fade">
-  <div class="text-6xl">🎁</div><p class="mt-3 break-all text-sm opacity-80">${link()}</p>
-  <div class="mt-5 flex gap-3 justify-center flex-wrap"><button class="btn" onClick=${copy}>🔗 ${t('copy')}</button><button class="btn" onClick=${()=>onOpen(id)}>${t('open')}</button></div></div></div>`;
- return html`<div class="max-w-xl mx-auto p-4 pt-16"><div class="glass p-5 space-y-4 fade">
-  <h1 class="text-2xl font-bold">🎁 ${t('title')}</h1>
-  <div class="grid sm:grid-cols-2 gap-3"><input class=${inp} placeholder=${t('sName')} value=${f.s} onInput=${e=>set('s',e.target.value)}/><input class=${inp} placeholder=${t('rName')} value=${f.r} onInput=${e=>set('r',e.target.value)}/></div>
-  <div><p class="text-sm mb-1 opacity-70">${t('occ')}</p><div class="grid grid-cols-2 gap-2">${Object.keys(OCC).map(k=>html`<button key=${k} onClick=${()=>set('occ',k)} class=${'rounded-xl px-3 py-2 text-sm border '+(f.occ==k?'btn border-transparent':'border-white/30 bg-white/10')}>${OCC[k].e} ${t(k)}</button>`)}</div></div>
-  <textarea rows=4 class=${inp} placeholder=${t('note')} value=${f.note} onInput=${e=>set('note',e.target.value)}/>
-  <div class="grid sm:grid-cols-2 gap-3 text-sm">
-   <label class="block">${t('photo')}<input type="file" accept="image/*" class="block w-full mt-1 text-xs" onChange=${async e=>e.target.files[0]&&set('photo',await sq(e.target.files[0]))}/>${f.photo&&html`<img src=${f.photo} class="w-16 h-16 rounded-lg mt-1 object-cover"/>`}</label>
-   <div>${t('voice')}<div class="flex gap-2 items-center mt-1"><button class="btn !py-1 !px-3 text-xs" onClick=${recToggle}>${rc?'⏹ '+t('stop'):'🎙 '+t('rec')}</button>${f.voice&&'✅'}</div>
-    <input type="file" accept="audio/*" class="block w-full mt-1 text-xs" onChange=${async e=>{const x=e.target.files[0];x&&x.size<1500000&&set('voice',await b64(x))}}/></div></div>
-  <div><p class="text-sm mb-1 opacity-70">${t('mods')}</p><div class="flex gap-2 flex-wrap">${['cake','puzzle','vault'].map(k=>html`<button key=${k} onClick=${()=>setF(x=>({...x,modes:{...x.modes,[k]:!x.modes[k]}}))} class=${'rounded-full px-4 py-1.5 text-sm border '+(f.modes[k]?'btn border-transparent':'border-white/30 bg-white/10')}>${t(k)}</button>`)}</div></div>
-  <label class="block text-sm">${t('pin')}<input class=${inp+' mt-1'} inputmode="numeric" maxlength=4 value=${f.pin} onInput=${e=>set('pin',e.target.value.replace(/\D/g,'').padEnd(0))}/></label>
-  <button class="btn w-full" onClick=${create}>✨ ${t('create')}</button></div></div>`}
-
-/* ---------- routing: / = creator form, /?room=xyz (or #xyz) = receiver welcome ---------- */
-const QMODE=!/claude/i.test(location.hostname); // published preview only passes #hash, so use ?room= everywhere else
-const getRid=()=>new URLSearchParams(location.search).get('room')||location.hash.slice(1)||'';
-const roomLink=id=>QMODE?location.href.split(/[?#]/)[0]+'?room='+id:location.href.split('#')[0]+'#'+id;
-/* ---------- app ---------- */
+function confetti(){const c=document.createElement('canvas');c.style.cssText='position:fixed;inset:0;z-index:99;pointer-events:none';c.width=innerWidth;c.height=innerHeight;document.body.appendChild(c);const x=c.getContext('2d'),P=[];
+for(let i=0;i<180;i++)P.push({x:innerWidth/2,y:innerHeight*.6,vx:(Math.random()-.5)*16,vy:-Math.random()*17-4,s:Math.random()*8+4,c:['#fbbf24','#fde68a','#f472b6','#60a5fa','#fff'][i%5],r:Math.random()*6});
+let t=0;const f=()=>{x.clearRect(0,0,c.width,c.height);P.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.r+=.2;x.fillStyle=p.c;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);x.restore()});if(++t<200)requestAnimationFrame(f);else c.remove()};f();[523,659,784,1047].forEach((n,i)=>setTimeout(()=>beep(n,.4,'triangle',.1),i*110))}
+function shrink(file,cb){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);cb(c.toDataURL('image/jpeg',.8))};im.src=r.result};r.readAsDataURL(file)}
+function readFile(file,cb){const r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(file)}
+function defaultPhoto(){const c=document.createElement('canvas');c.width=c.height=600;const x=c.getContext('2d'),g=x.createLinearGradient(0,0,600,600);g.addColorStop(0,'#3b1d6e');g.addColorStop(.5,'#c2410c');g.addColorStop(1,'#fbbf24');x.fillStyle=g;x.fillRect(0,0,600,600);x.font='260px serif';x.textAlign='center';x.textBaseline='middle';x.fillText('🎉',300,320);x.font='bold 46px serif';x.fillStyle='#fff';x.fillText('Made with love',300,520);return c.toDataURL('image/jpeg',.8)}
+function stepsOf(r){const m=r.selected_modes||[],f=r.flow_sequence,s=[];if(f!=='direct_cake'&&m.includes('puzzle'))s.push('puzzle');if(m.includes('vault'))s.push('vault');if(f==='direct_cake'||(f!=='puzzle_then_note'&&m.includes('cake')))s.push('cake');s.push('note','souvenir');return s}
+/* ---------- realtime room hook (Supabase broadcast + BroadcastChannel fallback) ---------- */
+function useRoom(id){const [room,setRoom]=useState(null);const bc=useRef(null);
+useEffect(()=>{if(!id)return;let ch,alive=true;
+try{setRoom(JSON.parse(localStorage.getItem('room_'+id)))}catch(e){}
+if(sb)sb.from('rooms').select('*').eq('id',id).single().then(({data})=>{if(alive&&data)setRoom(data)},()=>{});
+const b=new BroadcastChannel('room_'+id);bc.current=b;b.onmessage=e=>setRoom(r=>({...r,...e.data}));
+if(sb){ch=sb.channel('room_'+id).on('broadcast',{event:'patch'},m=>setRoom(r=>({...r,...m.payload}))).subscribe();b.ch=ch}
+return()=>{alive=false;b.close();bc.current=null;if(ch)sb.removeChannel(ch)}},[id]);
+const patch=p=>{setRoom(r=>{const n={...r,...p};try{localStorage.setItem('room_'+id,JSON.stringify(n))}catch(e){}return n});const b=bc.current;if(b){b.postMessage(p);if(b.ch)b.ch.send({type:'broadcast',event:'patch',payload:p})}if(sb)sb.from('rooms').update(p).eq('id',id).then(()=>{},()=>{})};
+return[room,patch]}
+/* ---------- UI atoms ---------- */
+function Dust(){const r=useRef();useEffect(()=>{const c=r.current,x=c.getContext('2d');let W,H,id;const P=[];const rs=()=>{W=c.width=innerWidth;H=c.height=innerHeight};rs();addEventListener('resize',rs);
+for(let i=0;i<70;i++)P.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.8+.4,v:Math.random()*.4+.1,p:Math.random()*6});
+const f=()=>{x.clearRect(0,0,W,H);P.forEach(p=>{p.y-=p.v;p.p+=.02;p.x+=Math.sin(p.p)*.3;if(p.y<-5){p.y=H+5;p.x=Math.random()*W}x.beginPath();x.arc(p.x,p.y,p.r,0,7);x.fillStyle='rgba(251,191,36,'+(.3+Math.sin(p.p*2)*.25)+')';x.fill()});id=requestAnimationFrame(f)};f();
+return()=>{cancelAnimationFrame(id);removeEventListener('resize',rs)}},[]);return h`<canvas ref=${r} className="fixed inset-0 pointer-events-none z-0"/>`}
+const Btn=({children,className,onClick,...p})=>h`<button ...${p} onClick=${e=>{beep(660,.12,'sine',.08);onClick&&onClick(e)}} className=${'relative overflow-hidden rounded-full px-7 py-3 font-semibold text-black bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-500 pg active:scale-95 hover:scale-105 transition '+(className||'')}><span className="shimmer"/><span className="relative">${children}</span></button>`;
+const Lbl=({t,children})=>h`<label className="block"><span className="text-xs text-amber-200/80">${t}</span>${children}</label>`;
+const Bars=()=>h`<div className="flex items-end justify-center gap-1 h-10">${[...Array(14)].map((_,i)=>h`<div key=${i} className="bar" style=${{animationDelay:i*.08+'s'}}/>`)}</div>`;
+/* ---------- Setup ---------- */
+function Setup({onCreate,onBack}){
+const [f,setF]=useState({sender_name:'',receiver_name:'',occasion:'birthday',selected_modes:['puzzle','vault','cake'],flow_sequence:'puzzle_then_cake',vault_type:'pin',vault_question:'',vault_answer:'',secret_note:'',envelope_style:'royal_gold',font_style:'vector_bangla',photo_url:'',voice_url:''});
+const set=(k,v)=>setF(s=>({...s,[k]:v}));const tog=m=>set('selected_modes',f.selected_modes.includes(m)?f.selected_modes.filter(x=>x!==m):[...f.selected_modes,m]);
+const sel=(k,opts)=>h`<select className=${IN} value=${f[k]} onChange=${e=>set(k,e.target.value)}>${opts.map(([v,l])=>h`<option key=${v} value=${v} className="text-black">${l}</option>`)}</select>`;
+const go=()=>{if(!f.receiver_name.trim())return alert('Please enter the receiver’s name');
+const id={birthday:'bd',achievement:'ac',wedding:'wd',graduation:'gr'}[f.occasion]+'-'+Math.floor(1000+Math.random()*9000);
+const row={...f,id,created_at:new Date().toISOString(),photo_url:f.photo_url||defaultPhoto(),is_candle_lit:false,is_puzzle_solved:false,is_vault_unlocked:false,is_cake_cut:false};onCreate(row)};
+return h`<div className=${GLASS+' p-5 sm:p-8 w-full max-w-xl my-6 pop'}>
+<h2 className=${'text-2xl font-bold text-center mb-4 '+GOLD} style=${{fontFamily:"'Cinzel',serif"}}>Create a Surprise</h2>
+<div className="grid gap-3">
+<div className="grid grid-cols-2 gap-3"><${Lbl} t="Your name"><input className=${IN} value=${f.sender_name} onInput=${e=>set('sender_name',e.target.value)}/><//><${Lbl} t="Receiver name"><input className=${IN} value=${f.receiver_name} onInput=${e=>set('receiver_name',e.target.value)}/><//></div>
+<${Lbl} t="Occasion">${sel('occasion',Object.entries(OCC).map(([k,v])=>[k,v[0]+' '+v[1]]))}<//>
+<div className="flex flex-wrap gap-2 text-sm">${[['puzzle','🧩 Puzzle'],['vault','🔒 Vault'],['cake','🎂 Cake']].map(([m,l])=>h`<button key=${m} onClick=${()=>tog(m)} className=${'px-4 py-1.5 rounded-full border '+(f.selected_modes.includes(m)?'bg-amber-400 text-black border-amber-300':'border-amber-300/30')}>${l}</button>`)}</div>
+<${Lbl} t="Flow">${sel('flow_sequence',[['puzzle_then_cake','Puzzle → Cake'],['puzzle_then_note','Puzzle → Note'],['direct_cake','Direct Cake'],['custom','Custom (as selected)']])}<//>
+<${Lbl} t="Vault lock">${sel('vault_type',[['pin','4-digit PIN'],['date','Special date'],['name','Secret word'],['quiz','Secret quiz']])}<//>
+${f.vault_type==='quiz'&&h`<input className=${IN} placeholder="Your question" value=${f.vault_question} onInput=${e=>set('vault_question',e.target.value)}/>`}
+<input className=${IN} type=${f.vault_type==='date'?'date':'text'} placeholder=${f.vault_type==='pin'?'4 digits':'Answer'} maxLength=${f.vault_type==='pin'?4:60} value=${f.vault_answer} onInput=${e=>set('vault_answer',e.target.value)}/>
+<${Lbl} t="Secret note"><textarea rows="3" className=${IN} style=${{fontFamily:FONTS[f.font_style]}} value=${f.secret_note} onInput=${e=>set('secret_note',e.target.value)}/><//>
+<div className="grid grid-cols-2 gap-3"><${Lbl} t="Envelope">${sel('envelope_style',[['vintage','📜 Vintage wax'],['royal_gold','👑 Royal gold'],['romantic','💖 Romantic'],['minimal_glass','🔮 Minimal glass']])}<//>
+<${Lbl} t="Font">${sel('font_style',[['chakrabak','চক্রবাক Chakrabak'],['vector_bangla','ভেক্টর Vector'],['kalpurush','কালপুরুষ Kalpurush'],['cursive_en','Cursive'],['serif_en','Elegant Serif'],['modern_en','Modern']])}<//></div>
+<div className="grid grid-cols-2 gap-3"><${Lbl} t="Photo"><input type="file" accept="image/*" className="text-xs w-full" onChange=${e=>e.target.files[0]&&shrink(e.target.files[0],u=>set('photo_url',u))}/><//>
+<${Lbl} t="Voice wish (optional)"><input type="file" accept="audio/*" className="text-xs w-full" onChange=${e=>e.target.files[0]&&readFile(e.target.files[0],u=>set('voice_url',u))}/><//></div>
+<div className="flex justify-between items-center pt-2"><button onClick=${onBack} className="text-amber-200/70 text-sm">← Back</button><${Btn} onClick=${go}>Create Room ✨<//></div></div></div>`}
+/* ---------- Steps ---------- */
+function Puzzle({room,patch,next}){
+const [t,setT]=useState(()=>{let a;do{a=[0,1,2,3,4,5,6,7,8].sort(()=>Math.random()-.5)}while(a.every((v,i)=>v===i));return a});const [sel,setSel]=useState(null);const done=room.is_puzzle_solved;
+const click=i=>{if(done)return;if(sel===null)return setSel(i);const n=[...t];[n[sel],n[i]]=[n[i],n[sel]];setT(n);setSel(null);beep(520,.1);if(n.every((v,k)=>v===k)){patch({is_puzzle_solved:true});confetti();playWish(room)}};
+return h`<div className="text-center pop w-full flex flex-col items-center">
+<h2 className=${'text-2xl mb-1 '+GOLD}>${done?'Beautiful memory ✨':'Solve the puzzle'}</h2><p className="text-xs text-amber-100/60 mb-3">${done?'Playing your wish…':'Tap two tiles to swap them'}</p>
+<div className=${'relative grid grid-cols-3 p-2 rounded-2xl border border-amber-300/40 shadow-[0_0_50px_rgba(251,191,36,0.25)] '+(done?'gap-0':'gap-1')} style=${{width:'min(86vw,360px)',aspectRatio:'1'}}>
+${t.map((v,i)=>h`<button key=${i} onClick=${()=>click(i)} className=${'rounded-md transition-all duration-300 '+(sel===i?'ring-2 ring-amber-300 scale-95':'')} style=${{backgroundImage:'url('+room.photo_url+')',backgroundSize:'300% 300%',backgroundPosition:(v%3)*50+'% '+Math.floor(v/3)*50+'%'}}/>`)}
+${done&&h`<div className="absolute inset-2 pointer-events-none rounded-md" style=${{background:'linear-gradient(115deg,transparent 35%,rgba(255,255,255,.35) 50%,transparent 65%)'}}/>`}</div>
+${done&&h`<div className="mt-4 w-full"><${Bars}/><${Btn} className="mt-4" onClick=${next}>Continue →<//></div>`}</div>`}
+function Vault({room,patch,next}){
+const [v,setV]=useState('');const [err,setErr]=useState(false);const t=room.vault_type,open=room.is_vault_unlocked;
+useEffect(()=>{if(open){const x=setTimeout(next,1100);return()=>clearTimeout(x)}},[open]);
+const norm=s=>String(s||'').trim().toLowerCase();
+const tryIt=()=>{if(norm(v)===norm(room.vault_answer)){patch({is_vault_unlocked:true});confetti()}else{setErr(true);beep(120,.3,'sawtooth');setTimeout(()=>setErr(false),600)}};
+return h`<div className=${GLASS+' p-6 text-center w-full max-w-sm pop'}>
+<div className=${'text-6xl mb-2 '+(open?'':'float')}>${open?'🔓':'🔐'}</div><h2 className=${'text-xl mb-3 '+GOLD}>${open?'Vault Unlocked!':'Secret Vault'}</h2>
+${t==='quiz'&&h`<p className="mb-3 text-amber-100">${room.vault_question}</p>`}
+${t==='pin'?h`<div className="flex justify-center gap-2 mb-4">${[0,1,2,3].map(i=>h`<div key=${i} className=${'w-12 h-16 rounded-lg flex items-center justify-center text-2xl font-bold text-amber-950 bg-gradient-to-b from-amber-200 to-amber-600 shadow-inner '+(err?'animate-bounce':'')}>${v[i]||''}</div>`)}</div>
+<input inputMode="numeric" maxLength="4" autoFocus className=${IN+' text-center tracking-[.6em]'} value=${v} onInput=${e=>setV(e.target.value.replace(/\D/g,''))}/>`
+:h`<input type=${t==='date'?'date':'text'} className=${IN+' text-center mb-1'} placeholder=${t==='date'?'':'Type the secret…'} value=${v} onInput=${e=>setV(e.target.value)}/>`}
+${!open&&h`<${Btn} className="mt-4" onClick=${tryIt}>Unlock<//>`}${err&&h`<p className="text-rose-300 text-xs mt-2">Not quite — try again</p>`}</div>`}
+function Cake({room,patch,next}){
+const lit=room.is_candle_lit,cut=room.is_cake_cut;const [blown,setBlown]=useState(false);const [kx,setKx]=useState(0);const was=useRef(false);const box=useRef();const st=useRef(null);
+useEffect(()=>{if(lit)was.current=true;else if(was.current)setBlown(true)},[lit]);
+useEffect(()=>{if(!lit)return;let stop=()=>{},dead=false;
+(async()=>{try{const s=await navigator.mediaDevices.getUserMedia({audio:true});if(dead)return s.getTracks().forEach(k=>k.stop());const a=ctx(),an=a.createAnalyser();an.fftSize=256;a.createMediaStreamSource(s).connect(an);const d=new Uint8Array(256);let n=0,on=true;
+stop=()=>{on=false;s.getTracks().forEach(k=>k.stop())};const tk=()=>{if(!on)return;an.getByteTimeDomainData(d);let m=0;d.forEach(x=>m=Math.max(m,Math.abs(x-128)));n=m>60?n+1:0;if(n>5){on=false;stop();patch({is_candle_lit:false});return}requestAnimationFrame(tk)};tk()}catch(e){}})();
+return()=>{dead=true;stop()}},[lit]);
+useEffect(()=>{if(cut){const x=setTimeout(next,3200);return()=>clearTimeout(x)}},[cut]);
+const mv=e=>{if(st.current===null||cut)return;const r=box.current.getBoundingClientRect(),p=(e.clientX-r.left)/r.width;setKx(Math.max(0,Math.min(1,p)));if(p>.85){st.current=null;patch({is_cake_cut:true});confetti();playWish(room)}};
+const stage=cut?'cut':lit?'lit':blown?'blown':'idle';
+return h`<div className="text-center pop w-full max-w-sm">
+<h2 className=${'text-2xl mb-4 '+GOLD}>${{idle:'Light the candles',lit:'Make a wish… and blow!',blown:'Now cut the cake',cut:'Happy '+OCC[room.occasion][1]+'! 🎉'}[stage]}</h2>
+<div ref=${box} className="relative mx-auto touch-none select-none" style=${{width:260,height:230,maxWidth:'80vw'}} onPointerDown=${e=>{if(stage==='blown'){e.currentTarget.setPointerCapture(e.pointerId);st.current=0}}} onPointerMove=${mv} onPointerUp=${()=>{st.current=null;if(!cut)setKx(0)}}>
+${lit&&h`<div className="absolute inset-0 rounded-full" style=${{background:'radial-gradient(circle at 50% 20%,rgba(251,191,36,.35),transparent 65%)'}}/>`}
+<div className="absolute left-0 right-0 top-8 flex justify-center gap-8">${[0,1,2].map(i=>h`<div key=${i} className="relative w-3 h-16 bg-gradient-to-b from-pink-200 to-pink-400 rounded-sm">
+${lit&&h`<div className="flame absolute -top-6 left-1/2 -ml-2 w-4 h-7 rounded-[50%_50%_50%_50%/60%_60%_40%_40%] bg-gradient-to-t from-orange-500 via-amber-300 to-yellow-100" style=${{animationDelay:i*.1+'s'}}/>`}
+${blown&&!cut&&h`<div className="smoke absolute -top-6 left-0 w-3 h-3 rounded-full bg-white/40" style=${{animationDelay:i*.2+'s'}}/>`}</div>`)}</div>
+<div className="absolute bottom-0 left-0 right-0 h-32 rounded-2xl bg-gradient-to-b from-amber-100 to-amber-600 border-t-8 border-white shadow-[0_0_40px_rgba(251,191,36,.3)] overflow-hidden transition-transform duration-700" style=${{transform:cut?'translateX(0)':'none'}}>
+<div className="h-8 bg-rose-400/80 mt-6"/>${cut&&h`<div className="absolute inset-y-0 left-1/2 w-1/2 bg-black/60 animate-pulse"/>`}</div>
+${stage==='blown'&&h`<div className="absolute top-24 text-4xl pointer-events-none" style=${{left:'calc('+kx*85+'% )'}}>🔪</div>`}</div>
+${stage==='idle'&&h`<${Btn} className="mt-6" onClick=${()=>patch({is_candle_lit:true})}>🔥 Light the match<//>`}
+${stage==='lit'&&h`<${Btn} className="mt-6" onClick=${()=>patch({is_candle_lit:false})}>💨 Blow (or use your mic)<//>`}
+${stage==='blown'&&h`<p className="mt-4 text-sm text-amber-100/70">Drag the knife across the cake →</p>`}</div>`}
+function Note({room,next}){
+const [open,setOpen]=useState(false);const f=room.font_style;
+return h`<div className="text-center w-full max-w-sm pop">${!open?h`<div className=${'relative rounded-2xl p-10 pt-16 shadow-[0_0_50px_rgba(251,191,36,0.25)] '+ENV[room.envelope_style]}><div className="absolute inset-x-0 top-0 h-1/2 opacity-30" style=${{clipPath:'polygon(0 0,100% 0,50% 100%)',background:'currentColor'}}/>
+<p className="mb-6 text-sm opacity-80">A letter for ${room.receiver_name}</p>
+<button onClick=${()=>{setOpen(true);beep(200,.2,'square',.1);confetti()}} className="text-6xl hover:scale-110 active:scale-90 transition" aria-label="Break the seal">${SEAL[room.envelope_style]}</button><p className="mt-3 text-xs opacity-70">Tap the seal</p></div>`
+:h`<div className=${'rounded-2xl p-7 pop '+ENV[room.envelope_style]}><p className="text-xl leading-relaxed whitespace-pre-wrap" style=${{fontFamily:FONTS[f]}}>${room.secret_note||'Wishing you the most wonderful '+OCC[room.occasion][1]+'!'}</p><p className="mt-5 text-right" style=${{fontFamily:FONTS[f]}}>— ${room.sender_name||'Someone special'}</p></div><${Btn} className="mt-5" onClick=${next}>Get your souvenir →<//>`}</div>`}
+function Souvenir({room}){
+const ref=useRef();const shot=()=>html2canvas(ref.current,{backgroundColor:null,scale:2});
+const dl=async()=>{const c=await shot(),a=document.createElement('a');a.download='celebration-card.png';a.href=c.toDataURL();a.click()};
+const share=async()=>{const c=await shot(),msg='A special '+OCC[room.occasion][1]+' surprise for '+room.receiver_name+'!';c.toBlob(async b=>{try{const f=new File([b],'card.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f],text:msg});else await navigator.share({text:msg,url:location.href})}catch(e){}})};
+return h`<div className="text-center w-full max-w-xs pop">
+<div ref=${ref} className="p-4 rounded-3xl bg-gradient-to-b from-[#1b1233] to-black border-4 border-amber-400/70"><div className="rounded-xl overflow-hidden border border-amber-300/50"><img src=${room.photo_url} className="w-full aspect-square object-cover"/></div>
+<div className="mt-3 inline-block px-3 py-1 rounded-full bg-amber-400 text-black text-xs font-semibold">${OCC[room.occasion][0]} ${OCC[room.occasion][1]}</div>
+<h3 className=${'text-xl mt-2 '+GOLD} style=${{fontFamily:"'Cinzel',serif"}}>${room.receiver_name}</h3><p className="text-xs text-amber-100/70">With love from ${room.sender_name||'a friend'}</p><p className="text-[10px] text-amber-100/40 mt-1">${new Date().toLocaleString()}</p></div>
+<div className="flex gap-3 justify-center mt-5"><${Btn} onClick=${dl}>⬇ Download<//><${Btn} onClick=${share}>↗ Share<//></div></div>`}
+/* ---------- Experience & App ---------- */
+function Experience({room,patch}){
+const steps=stepsOf(room),[i,setI]=useState(0),s=steps[i],next=()=>setI(x=>Math.min(x+1,steps.length-1)),p={room,patch,next};
+return h`<div className="w-full flex flex-col items-center gap-6"><div className="flex gap-2">${steps.map((_,k)=>h`<div key=${k} className=${'h-1.5 rounded-full transition-all '+(k===i?'w-8 bg-amber-400':'w-3 bg-amber-300/30')}/>`)}</div>
+${s==='puzzle'?h`<${Puzzle} ...${p}/>`:s==='vault'?h`<${Vault} ...${p}/>`:s==='cake'?h`<${Cake} ...${p}/>`:s==='note'?h`<${Note} ...${p}/>`:h`<${Souvenir} room=${room}/>`}</div>`}
 function App(){
- const[lang,setLang]=useState('bn'),[rid,setRid]=useState(getRid()),[toast,setToast]=useState('');
- useEffect(()=>{const h=()=>setRid(getRid());addEventListener('hashchange',h);addEventListener('popstate',h);return()=>{removeEventListener('hashchange',h);removeEventListener('popstate',h)}},[]);
- const t=(k,...a)=>{const v=T[lang][k];return typeof v=='function'?v(...a):v};
- const notify=m=>{setToast(m);setTimeout(()=>setToast(''),2500)};
- const open=id=>{if(QMODE)try{history.pushState({},'','?room='+id)}catch(e){location.hash=id}else location.hash=id;setRid(id)};
- return html`<div>
-  <${Confetti}/>
-  <button onClick=${()=>setLang(lang=='bn'?'en':'bn')} class="fixed top-3 right-3 z-40 glass !rounded-full px-4 py-1.5 text-sm" style="margin-top:env(safe-area-inset-top,0px)">🌐 ${t('lang')}</button>
-  ${rid?html`<${Room} key=${rid} id=${rid} t=${t} lang=${lang}/>`:html`<${Setup} t=${t} notify=${notify} onOpen=${open}/>`}
-  ${toast&&html`<div class="fixed bottom-6 inset-x-0 z-50 grid place-items-center fade"><div class="glass px-5 py-2 text-sm">${toast}</div></div>`}</div>`}
-class EB extends React.Component{
- constructor(p){super(p);this.state={e:null}}
- static getDerivedStateFromError(e){return{e}}
- componentDidCatch(e){console.error(e)}
- render(){return this.state.e?html`<div class="min-h-screen grid place-items-center p-6 text-center"><div class="glass p-6 max-w-sm"><div class="text-5xl">😅</div><p class="mt-3">Something went wrong / কিছু ভুল হয়েছে</p><div class="mt-4 flex gap-3 justify-center"><button class="btn" onClick=${()=>this.setState({e:null})}>Retry</button><button class="btn" onClick=${()=>{location.hash='';location.reload()}}>Home</button></div></div></div>`:this.props.children}}
-ReactDOM.createRoot(document.getElementById('root')).render(html`<${EB}><${App}/><//>`);
+const [id,setId]=useState(location.hash.slice(1));const [room,patch]=useRoom(id);const [mode,setMode]=useState('land');const [go,setGo]=useState(false);const [code,setCode]=useState('');
+useEffect(()=>{const f=()=>{setId(location.hash.slice(1));setGo(false)};addEventListener('hashchange',f);return()=>removeEventListener('hashchange',f)},[]);
+const create=async r=>{try{localStorage.setItem('room_'+r.id,JSON.stringify(r))}catch(e){}if(sb)sb.from('rooms').insert(r).then(()=>{},()=>{});location.hash=r.id;setMode('land')};
+let body;
+if(!id)body=mode==='setup'?h`<${Setup} onCreate=${create} onBack=${()=>setMode('land')}/>`:h`<div className=${GLASS+' p-8 text-center w-full max-w-sm pop'}><div className="text-6xl float mb-3">🎁</div><h1 className=${'text-2xl mb-5 '+GOLD} style=${{fontFamily:"'Cinzel',serif"}}>Celebration Room</h1>
+<${Btn} className="w-full" onClick=${()=>setMode('setup')}>Create a surprise<//><div className="flex gap-2 mt-5"><input className=${IN} placeholder="Room code e.g. bd-9876" value=${code} onInput=${e=>setCode(e.target.value.trim())}/><${Btn} className="!px-4" onClick=${()=>code&&(location.hash=code)}>Join<//></div></div>`;
+else if(!room)body=h`<div className=${GLASS+' p-8 text-center'}><p>Looking for room <b>${id}</b>…</p><button className="mt-4 text-amber-200 text-sm" onClick=${()=>{location.hash='';setId('')}}>← Back</button></div>`;
+else if(!go)body=h`<div className=${GLASS+' p-8 sm:p-10 text-center w-full max-w-md pop border-2'}><div className="text-7xl float mb-4">${OCC[room.occasion][0]}</div>
+<h1 className=${'text-2xl sm:text-3xl font-bold leading-snug '+GOLD} style=${{fontFamily:"'Cinzel',serif",filter:'drop-shadow(0 0 12px rgba(251,191,36,.5))'}}>✨ A Special Surprise for ${room.receiver_name}! ✨</h1>
+<p className="mt-3 text-amber-100/80">Celebrating your special ${OCC[room.occasion][1]}...</p><${Btn} className="mt-7 text-lg" onClick=${()=>{ctx();playTune(room.occasion);setTimeout(stopTune,5000);setGo(true)}}>Start / শুরু করুন<//>
+<p className="mt-5 text-[11px] text-amber-100/40">Room ${id}</p></div>`;
+else body=h`<${Experience} key=${id} room=${room} patch=${patch}/>`;
+return h`<div className="relative min-h-full w-full flex items-center justify-center px-4 py-6"><${Dust}/><div className="relative z-10 w-full flex justify-center">${body}</div></div>`}
+ReactDOM.createRoot(document.getElementById('root')).render(h`<${App}/>`);
 </script></body></html>
