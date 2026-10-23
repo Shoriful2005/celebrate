@@ -30,7 +30,7 @@ html,body{margin:0;background:#0b1020;color:#f5f5ff;font-family:'Segoe UI','Noto
 .btn{position:relative;overflow:hidden;background:linear-gradient(90deg,#fde68a,#f59e0b,#fde68a);background-size:200% 100%;animation:shim 3s linear infinite}
 @keyframes shim{to{background-position:200% 0}}
 html,body{background:#05060d}
-</style><link href="https://fonts.googleapis.com/css2?family=Cinzel&family=Dancing+Script&family=Hind+Siliguri&family=Noto+Serif+Bengali&family=Noto+Sans+Bengali&family=Playfair+Display&family=Poppins&display=swap" rel="stylesheet"></head>
+</style><link href="https://fonts.googleapis.com/css2?family=Cinzel&family=Dancing+Script&family=Hind+Siliguri:wght@400;600;700&family=Noto+Serif+Bengali:wght@400;700&family=Noto+Sans+Bengali:wght@400;700&family=Tiro+Bangla&family=Playfair+Display&family=Poppins&display=swap" rel="stylesheet"></head>
 <body><div id="root"></div>
 <script>
 const {useState,useEffect,useRef,useCallback}=React;
@@ -45,18 +45,19 @@ const OCC={
  achievement:{e:'🏆',p:'ac',c:['#fbbf24','#f97316'],fx:['🏆','⭐','🥂']},
  wedding:{e:'💍',p:'wd',c:['#fda4af','#f0abfc'],fx:['💖','💍','🌸']},
  graduation:{e:'🎓',p:'gr',c:['#38bdf8','#818cf8'],fx:['🎓','📜','✨']}};
-const FONTS={chakrabak:"'Noto Serif Bengali',serif",vector_bangla:"'Hind Siliguri',sans-serif",kalpurush:"'Noto Sans Bengali',sans-serif",cursive_en:"'Dancing Script',cursive",serif_en:"'Cinzel','Playfair Display',serif",modern_en:"'Poppins',sans-serif"};
+const BN="'Hind Siliguri','Noto Serif Bengali',sans-serif";
+const FONTS={chakrabak:"'Noto Serif Bengali','Tiro Bangla',serif",vector_bangla:"'Hind Siliguri','Noto Serif Bengali',sans-serif",kalpurush:"'Tiro Bangla','Noto Serif Bengali',serif",cursive_en:"'Dancing Script',"+BN,serif_en:"'Cinzel','Playfair Display',"+BN,modern_en:"'Poppins',"+BN};
 const ENV={vintage:{c:'📜',o:'📜',bg:'#f1dfb9',fg:'#4a2f14'},royal_gold:{c:'👑',o:'👑',bg:'linear-gradient(135deg,#fde68a,#b45309)',fg:'#2b1a00'},romantic:{c:'💌',o:'💖',bg:'#fecdd3',fg:'#7f1d3a'},minimal_glass:{c:'✉️',o:'💌',bg:'rgba(255,255,255,.12)',fg:'#fff'}};
 const T={
 en:{title:'Surprise Room',sName:'Your name',rName:'Receiver’s name',occ:'Occasion',note:'Secret note / letter',photo:'Receiver Photo (puzzle)',voice:'Voice wish',rec:'Record',stop:'Stop',mods:'Modules',cake:'Celebration',puzzle:'Puzzle',vault:'Vault',card:'Souvenir',pin:'Vault code (4 digits)',create:'Create Surprise',copy:'Copy Surprise Link',copied:'Surprise link copied!',open:'Open room',start:'Start',need:'Please enter both names',
 birthday:'Birthday',achievement:'Achievement',wedding:'Wedding / Anniversary',graduation:'Graduation',
-greet:r=>`✨ A Special Surprise for ${r}! ✨`,sub:o=>`Celebrating your special ${o}...`,sPhoto:'Sender Photo',unlockAt:'Unlock date & time (optional)',cakeText:'Cake topper text (e.g. Happy 25th)',candle:'Candle numbers (e.g. 25)',locked:'Your surprise unlocks in',cut:'Swipe across the cake to cut it',gift_box:'Gift Box',tapLight:'Tap the matchstick to light the candles!',lightBtn:'Light Candles',tapGift:'Tap the golden ribbon to open the gift',vq:'Vault question',va:'Vault answer',
+greet:r=>`✨ A Special Surprise for ${r}! ✨`,sub:o=>`Celebrating your special ${o}...`,sPhoto:'Sender Photo',unlockAt:'Unlock date & time (optional)',cakeText:'Cake topper text (e.g. Happy 25th)',candle:'Candle numbers (e.g. 25)',locked:'Your surprise unlocks in',cut:'Swipe across the cake to cut it',gift_box:'Gift Box',tapLight:'Tap the matchstick to light the candles!',lightBtn:'Light Candles',envTap:'Tap to open your secret note / নোটটি দেখতে ট্যাপ করুন ✉️',tapGift:'Tap the golden ribbon to open the gift',vq:'Vault question',va:'Vault answer',
 drag:'Drag the flame onto the candles',blow:'Blow into the mic (or tap)',tap:'Tap to blow',mic:'Listening…',done:'Hooray! Make a wish!',relight:'Relight',
 solve:'Slide the tiles to rebuild the photo',env:'Tap the envelope to read the letter',dial:'Turn the brass dials to the secret code',unlock:'Unlock',wrong:'Wrong code, try again',opened:'The vault is open! 💎',
 save:'Download card',share:'Share',congrats:'Congratulations',from:'From',hold:'Long-press the image to save it',nf:'Room not found',sync:'Live sync',local:'Local sync',lang:'বাংলা'},
 bn:{title:'সারপ্রাইজ রুম',sName:'আপনার নাম',rName:'প্রাপকের নাম',occ:'উপলক্ষ',note:'গোপন বার্তা / চিঠি',photo:'ছবি (পাজলের জন্য)',voice:'ভয়েস উইশ',rec:'রেকর্ড',stop:'থামান',mods:'মডিউল',cake:'উদযাপন',puzzle:'পাজল',vault:'ভল্ট',card:'স্মারক',pin:'ভল্ট কোড (৪ সংখ্যা)',create:'সারপ্রাইজ তৈরি করুন',copy:'সারপ্রাইজ লিংক কপি করুন',copied:'সারপ্রাইজ লিংক কপি হয়েছে!',open:'রুম খুলুন',start:'শুরু করুন',need:'দুটি নামই লিখুন',
 birthday:'জন্মদিন',achievement:'সাফল্য',wedding:'বিয়ে / বার্ষিকী',graduation:'গ্র্যাজুয়েশন',
-greet:r=>`✨ ${r}-এর জন্য বিশেষ সারপ্রাইজ! ✨`,sub:o=>`আপনার বিশেষ ${o} উদযাপন করছি...`,sPhoto:'আপনার ছবি',unlockAt:'খোলার তারিখ ও সময় (ঐচ্ছিক)',cakeText:'কেক টপার লেখা',candle:'মোমবাতির সংখ্যা (যেমন ২৫)',locked:'আপনার সারপ্রাইজ খুলবে',cut:'কেক কাটতে উপর দিয়ে সোয়াইপ করুন',gift_box:'গিফট বক্স',tapLight:'মোমবাতি জ্বালাতে টাচ করুন!',lightBtn:'মোমবাতি জ্বালান',tapGift:'গিফট খুলতে সোনালি ফিতায় ট্যাপ করুন',vq:'ভল্টের প্রশ্ন',va:'ভল্টের উত্তর',
+greet:r=>`✨ ${r}-এর জন্য বিশেষ সারপ্রাইজ! ✨`,sub:o=>`আপনার বিশেষ ${o} উদযাপন করছি...`,sPhoto:'আপনার ছবি',unlockAt:'খোলার তারিখ ও সময় (ঐচ্ছিক)',cakeText:'কেক টপার লেখা',candle:'মোমবাতির সংখ্যা (যেমন ২৫)',locked:'আপনার সারপ্রাইজ খুলবে',cut:'কেক কাটতে উপর দিয়ে সোয়াইপ করুন',gift_box:'গিফট বক্স',tapLight:'মোমবাতি জ্বালাতে টাচ করুন!',lightBtn:'মোমবাতি জ্বালান',envTap:'Tap to open your secret note / নোটটি দেখতে ট্যাপ করুন ✉️',tapGift:'গিফট খুলতে সোনালি ফিতায় ট্যাপ করুন',vq:'ভল্টের প্রশ্ন',va:'ভল্টের উত্তর',
 drag:'আগুনটি টেনে মোমবাতিতে ধরান',blow:'মাইকে ফুঁ দিন (বা ট্যাপ করুন)',tap:'ট্যাপ করে ফুঁ দিন',mic:'শুনছি…',done:'হুররে! একটি ইচ্ছা করুন!',relight:'আবার জ্বালান',
 solve:'টাইল সরিয়ে ছবিটি সাজান',env:'চিঠি পড়তে খামে ট্যাপ করুন',dial:'পিতলের ডায়াল ঘুরিয়ে গোপন কোড দিন',unlock:'খুলুন',wrong:'ভুল কোড, আবার চেষ্টা করুন',opened:'ভল্ট খুলে গেছে! 💎',
 save:'কার্ড ডাউনলোড',share:'শেয়ার',congrats:'অভিনন্দন',from:'প্রেরক',hold:'ছবিটি সেভ করতে চেপে ধরুন',nf:'রুম পাওয়া যায়নি',sync:'লাইভ সিঙ্ক',local:'লোকাল সিঙ্ক',lang:'English'}};
@@ -71,10 +72,20 @@ const TUNES={
 const dur=n=>TUNES[n].reduce((s,x)=>s+x[1],0)*1000;
 function tune(n,vol=.15){try{const a=ac();let t=a.currentTime+.05;const g=a.createGain();g.gain.value=vol;g.connect(a.destination);
  TUNES[n].forEach(([f,d])=>{const o=a.createOscillator();o.type=n=='achievement'?'sawtooth':'triangle';o.frequency.value=f;const e=a.createGain();e.gain.setValueAtTime(0,t);e.gain.linearRampToValueAtTime(1,t+.03);e.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(e);e.connect(g);o.start(t);o.stop(t+d+.05);t+=d})}catch(e){}}
-const MUSIC={birthday:'music/birthday.mp3',achievement:'music/achievement.mp3',wedding:'music/wedding.mp3',graduation:'music/graduation.mp3'};
-let bgT,bgA=null;
+/* Each occasion: [your direct MP3 URL (optional), bundled file]. Tried in order; synth tune is the last fallback. */
+const MUSIC={birthday:['','music/birthday.mp3'],achievement:['','music/achievement.mp3'],wedding:['','music/wedding.mp3'],graduation:['','music/graduation.mp3']};
+let bgT=null,bgA=null;
+function bgm(n,on,i=0){clearInterval(bgT);bgT=null;if(bgA){try{bgA.pause()}catch(e){}bgA=null}
+ if(!on)return;ac();
+ const srcs=MUSIC[n].filter(Boolean),synth=()=>{tune(n,.06);bgT=setInterval(()=>tune(n,.06),dur(n)+2500)};
+ if(i>=srcs.length)return synth();
+ const a=new Audio(srcs[i]);a.loop=true;a.volume=.55;bgA=a;
+ const nx=()=>{if(bgA===a){bgA=null;bgm(n,true,i+1)}};
+ a.onerror=nx;try{const p=a.play();if(p&&p.catch)p.catch(nx)}catch(e){nx()}}
+const bgEnsure=n=>{if(bgT||(bgA&&!bgA.paused))return;bgm(n,true)};
+
 /* MP3 first (started inside the Start click so autoplay is allowed); synth fallback if the file is missing or playback is blocked */
-function bgm(n,on){clearInterval(bgT);if(bgA){try{bgA.pause()}catch(e){}bgA=null}
+function bgmOld(n,on){clearInterval(bgT);if(bgA){try{bgA.pause()}catch(e){}bgA=null}
  if(!on)return;ac();
  const a=new Audio(MUSIC[n]);a.loop=true;a.volume=.55;a.preload='auto';
  const fb=()=>{if(bgA!==a)return;bgA=null;tune(n,.06);bgT=setInterval(()=>tune(n,.06),dur(n)+2500)};
@@ -179,15 +190,16 @@ function Viz({src}){const a=useRef(),c=useRef();useEffect(()=>{const el=a.curren
 function Env({note,t,sty}){
  const[isEnvelopeOpen,setO]=useState(false),o=isEnvelopeOpen,E=ENV[sty]||ENV.minimal_glass,seal={vintage:'🔴',royal_gold:'👑',romantic:'💖',minimal_glass:'✨'}[sty]||'✨';
  const open=()=>{if(o)return;setO(true);try{const a=ac(),n=2400,b=a.createBuffer(1,n,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const s=a.createBufferSource(),g=a.createGain();g.gain.value=.4;s.buffer=b;s.connect(g);g.connect(a.destination);s.start()}catch(e){}};
+ if(!note||note.trim()==='')return null; /* no secret note: no envelope, the flow just continues */
  return html`<div class="mt-5 text-center">
-  <div role="button" tabindex="0" onClick=${open} onKeyDown=${e=>e.key=='Enter'&&open()} class="relative mx-auto cursor-pointer select-none" style=${{width:'min(80vw,300px)',height:o?'300px':'170px',transition:'height .8s ease',touchAction:'manipulation'}}>
+  <div role="button" tabindex="0" onClick=${open} onKeyDown=${e=>e.key=='Enter'&&open()} class="relative mx-auto cursor-pointer select-none" style=${{width:'min(80vw,300px)',height:o?'300px':'170px',transition:'height .8s ease',touchAction:'manipulation',borderRadius:'12px',animation:o?'none':'glow 1.4s ease-in-out infinite alternate'}}>
    <div class="absolute inset-x-0 bottom-0 rounded-xl" style=${{height:'170px',background:E.bg,border:'1px solid rgba(251,191,36,.45)',boxShadow:'0 10px 30px rgba(0,0,0,.5)'}}></div>
    <div class="absolute left-3 right-3 rounded-lg p-4 text-left text-sm whitespace-pre-wrap overflow-auto" style=${{bottom:'12px',height:o?'270px':'110px',opacity:o?1:0,transition:'all .9s .35s ease',background:'#fffdf5',color:'#3b2a14',zIndex:o?3:1}}>${note||'❤'}</div>
    <div class="absolute inset-x-0 bottom-0" style=${{height:'170px',zIndex:2,pointerEvents:'none',background:E.bg,clipPath:'polygon(0 100%,50% 40%,100% 100%)',filter:'brightness(.92)',opacity:o?0:1,transition:'opacity .4s .5s'}}></div>
    <div class="absolute inset-x-0" style=${{bottom:'85px',height:'85px',zIndex:4,pointerEvents:'none',background:E.bg,filter:'brightness(.8)',clipPath:'polygon(0 0,100% 0,50% 100%)',transformOrigin:'top',transform:o?'scaleY(-1)':'none',opacity:o?0:1,transition:'transform .7s ease,opacity .5s .7s'}}></div>
    <div class="absolute text-3xl" style=${{left:'calc(50% - 20px)',width:'40px',bottom:'66px',zIndex:5,pointerEvents:'none',transform:o?'scale(0) rotate(50deg)':'scale(1)',opacity:o?0:1,transition:'all .45s ease',animation:o?'none':'float 2s ease-in-out infinite'}}>${seal}</div>
   </div>
-  ${!o&&html`<p class="text-sm opacity-70 mt-3">${t('env')}</p>`}</div>`}
+  ${!o&&html`<p class="text-sm opacity-80 mt-3">${t('envTap')}</p>`}</div>`}
 function EnvOld({note,t,sty}){const[o,setO]=useState(0),E=ENV[sty]||ENV.minimal_glass;
  return html`<div class="text-center mt-5"><button onClick=${()=>setO(1)} class=${'text-7xl '+(o?'':'animate-bounce')}>${o?E.o:E.c}</button>
  ${o?html`<p class="glass p-4 mt-3 whitespace-pre-wrap text-left fade" style=${{background:E.bg,color:E.fg}}>${note||'❤'}</p>`:html`<p class="text-sm opacity-70">${t('env')}</p>`}</div>`}
@@ -257,7 +269,7 @@ function Room({id,t,lang}){
   :html`<div class="max-w-xl mx-auto p-4 fade">
     <div class="flex items-center justify-between mb-4 text-sm"><span class="opacity-70">● ${live?t('sync'):t('local')}</span>
      <button onClick=${()=>{bgm(room.occasion,mute);setMute(!mute)}} class="fixed top-3 right-36 z-40 glass !rounded-full px-3 py-1.5 text-xl" style="margin-top:env(safe-area-inset-top,0px)">${mute?'🔇':'🔊'}</button></div>
-    <div class="flex gap-2 justify-center flex-wrap mb-5">${tabs.map(m=>html`<button key=${m} onClick=${()=>!lockd(m)&&setTab(m)} class=${'px-4 py-1.5 rounded-full text-sm border '+(m==cur?'btn border-transparent':'border-white/30 bg-white/10')}>${lockd(m)?'🔒 ':m=='cake'?o.e+' ':''}${t(m)}</button>`)}</div>
+    <div class="flex gap-2 justify-center flex-wrap mb-5">${tabs.map(m=>html`<button key=${m} onClick=${()=>{if(lockd(m))return;setTab(m);if(m=='cake'&&!mute)bgEnsure(room.occasion)}} class=${'px-4 py-1.5 rounded-full text-sm border '+(m==cur?'btn border-transparent':'border-white/30 bg-white/10')}>${lockd(m)?'🔒 ':m=='cake'?o.e+' ':''}${t(m)}</button>`)}</div>
     <div class="glass p-5" key=${cur}>
      ${cur=='cake'&&html`<${Stage} room=${room} up=${up} t=${t}/>`}
      ${cur=='puzzle'&&html`<${Puzzle} room=${room} up=${up} t=${t}/>`}
