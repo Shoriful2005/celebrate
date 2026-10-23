@@ -71,7 +71,15 @@ const TUNES={
 const dur=n=>TUNES[n].reduce((s,x)=>s+x[1],0)*1000;
 function tune(n,vol=.15){try{const a=ac();let t=a.currentTime+.05;const g=a.createGain();g.gain.value=vol;g.connect(a.destination);
  TUNES[n].forEach(([f,d])=>{const o=a.createOscillator();o.type=n=='achievement'?'sawtooth':'triangle';o.frequency.value=f;const e=a.createGain();e.gain.setValueAtTime(0,t);e.gain.linearRampToValueAtTime(1,t+.03);e.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(e);e.connect(g);o.start(t);o.stop(t+d+.05);t+=d})}catch(e){}}
-let bgT;function bgm(n,on){clearInterval(bgT);if(on){tune(n,.06);bgT=setInterval(()=>tune(n,.06),dur(n)+2500)}}
+const MUSIC={birthday:'music/birthday.mp3',achievement:'music/achievement.mp3',wedding:'music/wedding.mp3',graduation:'music/graduation.mp3'};
+let bgT,bgA=null;
+/* MP3 first (started inside the Start click so autoplay is allowed); synth fallback if the file is missing or playback is blocked */
+function bgm(n,on){clearInterval(bgT);if(bgA){try{bgA.pause()}catch(e){}bgA=null}
+ if(!on)return;ac();
+ const a=new Audio(MUSIC[n]);a.loop=true;a.volume=.55;a.preload='auto';
+ const fb=()=>{if(bgA!==a)return;bgA=null;tune(n,.06);bgT=setInterval(()=>tune(n,.06),dur(n)+2500)};
+ a.onerror=fb;bgA=a;
+ try{const p=a.play();if(p&&p.catch)p.catch(fb)}catch(e){fb()}}
 const boom=o=>window.dispatchEvent(new CustomEvent('boom',{detail:OCC[o].fx}));
 
 /* ---------- helpers ---------- */
@@ -156,7 +164,19 @@ function Viz({src}){const a=useRef(),c=useRef();useEffect(()=>{const el=a.curren
  el.play().catch(()=>{});return()=>cancelAnimationFrame(raf)},[]);
  return html`<div><canvas ref=${c} width=300 height=60 class="mx-auto max-w-full"/><audio ref=${a} src=${src} controls class="w-full mt-2"/></div>`}
 
-function Env({note,t,sty}){const[o,setO]=useState(0),E=ENV[sty]||ENV.minimal_glass;
+function Env({note,t,sty}){
+ const[o,setO]=useState(false),E=ENV[sty]||ENV.minimal_glass,seal={vintage:'🔴',royal_gold:'👑',romantic:'💖',minimal_glass:'✨'}[sty]||'✨';
+ const open=()=>{if(o)return;setO(true);try{const a=ac(),n=2400,b=a.createBuffer(1,n,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const s=a.createBufferSource(),g=a.createGain();g.gain.value=.4;s.buffer=b;s.connect(g);g.connect(a.destination);s.start()}catch(e){}};
+ return html`<div class="mt-5 text-center">
+  <div role="button" tabindex="0" onClick=${open} onKeyDown=${e=>e.key=='Enter'&&open()} class="relative mx-auto cursor-pointer select-none" style=${{width:'min(80vw,300px)',height:o?'300px':'170px',transition:'height .8s ease',touchAction:'manipulation'}}>
+   <div class="absolute inset-x-0 bottom-0 rounded-xl" style=${{height:'170px',background:E.bg,border:'1px solid rgba(251,191,36,.45)',boxShadow:'0 10px 30px rgba(0,0,0,.5)'}}></div>
+   <div class="absolute left-3 right-3 rounded-lg p-4 text-left text-sm whitespace-pre-wrap overflow-auto" style=${{bottom:'12px',height:o?'270px':'110px',opacity:o?1:0,transition:'all .9s .35s ease',background:'#fffdf5',color:'#3b2a14',zIndex:o?3:1}}>${note||'❤'}</div>
+   <div class="absolute inset-x-0 bottom-0" style=${{height:'170px',zIndex:2,pointerEvents:'none',background:E.bg,clipPath:'polygon(0 100%,50% 40%,100% 100%)',filter:'brightness(.92)',opacity:o?0:1,transition:'opacity .4s .5s'}}></div>
+   <div class="absolute inset-x-0" style=${{bottom:'85px',height:'85px',zIndex:4,pointerEvents:'none',background:E.bg,filter:'brightness(.8)',clipPath:'polygon(0 0,100% 0,50% 100%)',transformOrigin:'top',transform:o?'perspective(600px) rotateX(180deg)':'none',transition:'transform .7s ease'}}></div>
+   <div class="absolute text-3xl" style=${{left:'calc(50% - 20px)',width:'40px',bottom:'66px',zIndex:5,pointerEvents:'none',transform:o?'scale(0) rotate(50deg)':'scale(1)',opacity:o?0:1,transition:'all .45s ease',animation:o?'none':'float 2s ease-in-out infinite'}}>${seal}</div>
+  </div>
+  ${!o&&html`<p class="text-sm opacity-70 mt-3">${t('env')}</p>`}</div>`}
+function EnvOld({note,t,sty}){const[o,setO]=useState(0),E=ENV[sty]||ENV.minimal_glass;
  return html`<div class="text-center mt-5"><button onClick=${()=>setO(1)} class=${'text-7xl '+(o?'':'animate-bounce')}>${o?E.o:E.c}</button>
  ${o?html`<p class="glass p-4 mt-3 whitespace-pre-wrap text-left fade" style=${{background:E.bg,color:E.fg}}>${note||'❤'}</p>`:html`<p class="text-sm opacity-70">${t('env')}</p>`}</div>`}
 
