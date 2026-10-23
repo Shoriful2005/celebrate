@@ -24,6 +24,7 @@ html,body{margin:0;background:#0b1020;color:#f5f5ff;font-family:'Segoe UI','Noto
 @keyframes glow{from{box-shadow:0 0 12px var(--a),0 0 30px var(--a)}to{box-shadow:0 0 30px var(--b),0 0 70px var(--b)}}
 @keyframes drift{0%{transform:translateY(105vh) rotate(0)}100%{transform:translateY(-15vh) rotate(360deg)}}
 .glow{animation:glow 1.2s ease-in-out infinite alternate}
+@keyframes spk{0%{transform:translate(-70px,60px) scale(.5);opacity:1}75%{transform:translate(0,0) scale(1.6);opacity:1}100%{transform:translate(0,-6px) scale(2.4);opacity:0}}
 .glass{background:rgba(0,0,0,.4);border-color:rgba(252,211,77,.3);box-shadow:0 0 50px rgba(251,191,36,.2),0 20px 60px rgba(0,0,0,.5)}
 .gold{background:linear-gradient(90deg,#fde68a,#fbbf24,#eab308);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
 .btn{position:relative;overflow:hidden;background:linear-gradient(90deg,#fde68a,#f59e0b,#fde68a);background-size:200% 100%;animation:shim 3s linear infinite}
@@ -49,13 +50,13 @@ const ENV={vintage:{c:'📜',o:'📜',bg:'#f1dfb9',fg:'#4a2f14'},royal_gold:{c:'
 const T={
 en:{title:'Surprise Room',sName:'Your name',rName:'Receiver’s name',occ:'Occasion',note:'Secret note / letter',photo:'Receiver Photo (puzzle)',voice:'Voice wish',rec:'Record',stop:'Stop',mods:'Modules',cake:'Celebration',puzzle:'Puzzle',vault:'Vault',card:'Souvenir',pin:'Vault code (4 digits)',create:'Create Surprise',copy:'Copy Surprise Link',copied:'Surprise link copied!',open:'Open room',start:'Start',need:'Please enter both names',
 birthday:'Birthday',achievement:'Achievement',wedding:'Wedding / Anniversary',graduation:'Graduation',
-greet:r=>`✨ A Special Surprise for ${r}! ✨`,sub:o=>`Celebrating your special ${o}...`,sPhoto:'Sender Photo',unlockAt:'Unlock date & time (optional)',cakeText:'Cake topper text (e.g. Happy 25th)',candle:'Candle numbers (e.g. 25)',locked:'Your surprise unlocks in',cut:'Swipe across the cake to cut it',gift_box:'Gift Box',tapGift:'Tap the golden ribbon to open the gift',vq:'Vault question',va:'Vault answer',
+greet:r=>`✨ A Special Surprise for ${r}! ✨`,sub:o=>`Celebrating your special ${o}...`,sPhoto:'Sender Photo',unlockAt:'Unlock date & time (optional)',cakeText:'Cake topper text (e.g. Happy 25th)',candle:'Candle numbers (e.g. 25)',locked:'Your surprise unlocks in',cut:'Swipe across the cake to cut it',gift_box:'Gift Box',tapLight:'Tap the matchstick to light the candles!',lightBtn:'Light Candles',tapGift:'Tap the golden ribbon to open the gift',vq:'Vault question',va:'Vault answer',
 drag:'Drag the flame onto the candles',blow:'Blow into the mic (or tap)',tap:'Tap to blow',mic:'Listening…',done:'Hooray! Make a wish!',relight:'Relight',
 solve:'Slide the tiles to rebuild the photo',env:'Tap the envelope to read the letter',dial:'Turn the brass dials to the secret code',unlock:'Unlock',wrong:'Wrong code, try again',opened:'The vault is open! 💎',
 save:'Download card',share:'Share',congrats:'Congratulations',from:'From',hold:'Long-press the image to save it',nf:'Room not found',sync:'Live sync',local:'Local sync',lang:'বাংলা'},
 bn:{title:'সারপ্রাইজ রুম',sName:'আপনার নাম',rName:'প্রাপকের নাম',occ:'উপলক্ষ',note:'গোপন বার্তা / চিঠি',photo:'ছবি (পাজলের জন্য)',voice:'ভয়েস উইশ',rec:'রেকর্ড',stop:'থামান',mods:'মডিউল',cake:'উদযাপন',puzzle:'পাজল',vault:'ভল্ট',card:'স্মারক',pin:'ভল্ট কোড (৪ সংখ্যা)',create:'সারপ্রাইজ তৈরি করুন',copy:'সারপ্রাইজ লিংক কপি করুন',copied:'সারপ্রাইজ লিংক কপি হয়েছে!',open:'রুম খুলুন',start:'শুরু করুন',need:'দুটি নামই লিখুন',
 birthday:'জন্মদিন',achievement:'সাফল্য',wedding:'বিয়ে / বার্ষিকী',graduation:'গ্র্যাজুয়েশন',
-greet:r=>`✨ ${r}-এর জন্য বিশেষ সারপ্রাইজ! ✨`,sub:o=>`আপনার বিশেষ ${o} উদযাপন করছি...`,sPhoto:'আপনার ছবি',unlockAt:'খোলার তারিখ ও সময় (ঐচ্ছিক)',cakeText:'কেক টপার লেখা',candle:'মোমবাতির সংখ্যা (যেমন ২৫)',locked:'আপনার সারপ্রাইজ খুলবে',cut:'কেক কাটতে উপর দিয়ে সোয়াইপ করুন',gift_box:'গিফট বক্স',tapGift:'গিফট খুলতে সোনালি ফিতায় ট্যাপ করুন',vq:'ভল্টের প্রশ্ন',va:'ভল্টের উত্তর',
+greet:r=>`✨ ${r}-এর জন্য বিশেষ সারপ্রাইজ! ✨`,sub:o=>`আপনার বিশেষ ${o} উদযাপন করছি...`,sPhoto:'আপনার ছবি',unlockAt:'খোলার তারিখ ও সময় (ঐচ্ছিক)',cakeText:'কেক টপার লেখা',candle:'মোমবাতির সংখ্যা (যেমন ২৫)',locked:'আপনার সারপ্রাইজ খুলবে',cut:'কেক কাটতে উপর দিয়ে সোয়াইপ করুন',gift_box:'গিফট বক্স',tapLight:'মোমবাতি জ্বালাতে টাচ করুন!',lightBtn:'মোমবাতি জ্বালান',tapGift:'গিফট খুলতে সোনালি ফিতায় ট্যাপ করুন',vq:'ভল্টের প্রশ্ন',va:'ভল্টের উত্তর',
 drag:'আগুনটি টেনে মোমবাতিতে ধরান',blow:'মাইকে ফুঁ দিন (বা ট্যাপ করুন)',tap:'ট্যাপ করে ফুঁ দিন',mic:'শুনছি…',done:'হুররে! একটি ইচ্ছা করুন!',relight:'আবার জ্বালান',
 solve:'টাইল সরিয়ে ছবিটি সাজান',env:'চিঠি পড়তে খামে ট্যাপ করুন',dial:'পিতলের ডায়াল ঘুরিয়ে গোপন কোড দিন',unlock:'খুলুন',wrong:'ভুল কোড, আবার চেষ্টা করুন',opened:'ভল্ট খুলে গেছে! 💎',
 save:'কার্ড ডাউনলোড',share:'শেয়ার',congrats:'অভিনন্দন',from:'প্রেরক',hold:'ছবিটি সেভ করতে চেপে ধরুন',nf:'রুম পাওয়া যায়নি',sync:'লাইভ সিঙ্ক',local:'লোকাল সিঙ্ক',lang:'English'}};
@@ -121,18 +122,18 @@ function useRoom(id){
 /* ---------- modules ---------- */
 function Stage({room,up,t}){
  const lit=room.is_candle_lit,blown=room.blown,o=OCC[room.occasion],bd=room.occasion=='birthday';
- const cake=useRef(),kx=useRef(null),[drag,setDrag]=useState(null),[mic,setMic]=useState(false);
- useEffect(()=>{if(!drag)return;const mv=e=>setDrag({x:e.clientX,y:e.clientY});
-  const end=e=>{const r=cake.current.getBoundingClientRect();if(e.clientX>r.left-40&&e.clientX<r.right+40&&e.clientY>r.top-50&&e.clientY<r.top+r.height*.55)up({is_candle_lit:true,blown:false});setDrag(null)};
-  addEventListener('pointermove',mv);addEventListener('pointerup',end);return()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',end)}},[!!drag]);
+ const cake=useRef(),kx=useRef(null),[mic,setMic]=useState(false),[spark,setSpark]=useState(false);
+ const strike=()=>{const a=ac(),n=Math.floor(a.sampleRate*.35),b=a.createBuffer(1,n,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();f.type='highpass';f.frequency.value=2500;g.gain.value=.5;s.buffer=b;s.connect(f);f.connect(g);g.connect(a.destination);s.start();const o=a.createOscillator(),og=a.createGain();o.type='sawtooth';o.frequency.value=90;og.gain.setValueAtTime(.12,a.currentTime+.3);og.gain.exponentialRampToValueAtTime(.001,a.currentTime+.7);o.connect(og);og.connect(a.destination);o.start(a.currentTime+.3);o.stop(a.currentTime+.75)};
+ const light=()=>{if(spark)return;setSpark(true);try{strike()}catch(e){}setTimeout(()=>{up({is_candle_lit:true,blown:false});setSpark(false)},700)};
  const blow=()=>up({is_candle_lit:false,blown:true,ev:'blown'});
  const listen=async()=>{try{const s=await navigator.mediaDevices.getUserMedia({audio:true}),c=ac(),n=c.createAnalyser();c.createMediaStreamSource(s).connect(n);
   const d=new Uint8Array(n.fftSize);setMic(true);let h=0;const L=()=>{n.getByteTimeDomainData(d);let m=0;d.forEach(v=>m=Math.max(m,Math.abs(v-128)));h=m>60?h+1:0;
    if(h>6){s.getTracks().forEach(x=>x.stop());setMic(false);blow();return}requestAnimationFrame(L)};L()}catch(e){}};
  return html`<div class="text-center select-none">
-  <p class="mb-2 opacity-80">${!lit&&!blown?t('drag'):lit?(mic?t('mic'):t('blow')):t('done')}</p>
-  <div ref=${cake} class="relative inline-block pt-12">
+  <p class="mb-2 opacity-80">${!lit&&!blown?t('tapLight'):lit?(mic?t('mic'):t('blow')):t('done')}</p>
+  <div ref=${cake} class="relative inline-block pt-12" style=${{filter:lit?'drop-shadow(0 0 30px rgba(251,191,36,.55))':'none',transition:'filter .6s'}}>
    <div class="absolute top-0 inset-x-0 flex justify-center gap-4 text-3xl h-12">
+    ${spark&&html`<span class="absolute pointer-events-none" style="left:50%;top:0;font-size:2rem;animation:spk .7s ease-out forwards">✨</span>`}
     ${lit&&(bd?[0,1,2]:[0]).map(i=>html`<span key=${i} style="animation:flick .3s infinite alternate">${bd?'🔥':'✨'}</span>`)}
     ${blown&&[0,1,2].map(i=>html`<span key=${'s'+i} style=${{animation:'rise 2s forwards',animationDelay:i*.25+'s',opacity:0}}>💨</span>`)}
    </div>
@@ -141,11 +142,11 @@ function Stage({room,up,t}){
    ${blown&&!room.is_cake_cut&&html`<p class="text-sm opacity-70">${t('cut')}</p>`}
   </div>
   <div class="mt-5 flex justify-center gap-3 flex-wrap">
-   ${!lit&&!blown&&html`<div onPointerDown=${e=>{e.preventDefault();setDrag({x:e.clientX,y:e.clientY})}} class="text-6xl cursor-grab touch-none">🔥</div>`}
+   ${!lit&&!blown&&html`<button onClick=${light} class="btn glow px-6 py-3 text-lg flex items-center gap-2" style="touch-action:manipulation"><span class="text-2xl">🔥</span> ${t('lightBtn')} 🕯️</button>`}
    ${lit&&html`<button class="btn" onClick=${listen}>🎤 ${t('blow').split(' (')[0]}</button><button class="btn" onClick=${blow}>${t('tap')}</button>`}
    ${blown&&html`<button class="btn" onClick=${()=>up({is_candle_lit:false,blown:false})}>${t('relight')}</button>`}
   </div>
-  ${drag&&html`<div class="fixed text-5xl pointer-events-none z-40" style=${{left:drag.x-24,top:drag.y-24}}>🔥</div>`}
+  
  </div>`}
 
 function Viz({src}){const a=useRef(),c=useRef();useEffect(()=>{const el=a.current;let an,raf;
