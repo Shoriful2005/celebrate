@@ -128,6 +128,18 @@ function useRoom(id){
  return{room,up,live}}
 
 /* ---------- modules ---------- */
+/* Candles drawn in CSS so every flame sits exactly on its wick: column = flame, wick, candle body (flame bottom touches wick top) */
+function CakeArt({lit}){
+ const cs=[['#f472b6',40],['#60a5fa',54],['#fbbf24',46]];
+ return html`<div class="relative mx-auto" style=${{width:'210px'}}>
+  ${lit&&html`<div class="absolute pointer-events-none" style=${{left:'50%',top:'-14px',width:'230px',height:'130px',transform:'translateX(-50%)',background:'radial-gradient(ellipse,rgba(251,191,36,.26),transparent 70%)'}}></div>`}
+  <div class="relative flex justify-center items-end gap-6">${cs.map(([c,h],i)=>html`<div key=${i} class="flex flex-col items-center">
+   <div style=${{width:'12px',height:'20px',marginBottom:'-1px',opacity:lit?1:0,transformOrigin:'50% 100%',transition:'opacity .3s',borderRadius:'50% 50% 50% 50% / 62% 62% 38% 38%',background:'radial-gradient(ellipse at 50% 80%,#fffbe0 0%,#fcd34d 40%,#f97316 85%)',animation:lit?'flick .3s infinite alternate':'none'}}></div>
+   <div style=${{width:'2px',height:'7px',background:'#2b2118'}}></div>
+   <div style=${{width:'11px',height:h+'px',borderRadius:'3px',background:`repeating-linear-gradient(135deg,${c} 0 6px,#fff 6px 10px)`}}></div></div>`)}</div>
+  <div style=${{width:'150px',height:'40px',margin:'0 auto',borderRadius:'10px 10px 0 0',background:'linear-gradient(#fbcfe8,#ec4899)',borderTop:'6px solid #fff'}}></div>
+  <div style=${{width:'190px',height:'52px',margin:'0 auto',borderRadius:'8px',background:'linear-gradient(#fde68a,#b45309)'}}></div>
+  <div style=${{width:'214px',height:'8px',margin:'0 auto',borderRadius:'50%',background:'#e5e7eb'}}></div></div>`}
 function Stage({room,up,t}){
  const lit=room.is_candle_lit,blown=room.blown,o=OCC[room.occasion],bd=room.occasion=='birthday';
  const cake=useRef(),kx=useRef(null),[mic,setMic]=useState(false),[spark,setSpark]=useState(false);
@@ -139,14 +151,14 @@ function Stage({room,up,t}){
    if(h>6){s.getTracks().forEach(x=>x.stop());setMic(false);blow();return}requestAnimationFrame(L)};L()}catch(e){}};
  return html`<div class="text-center select-none">
   <p class="mb-2 opacity-80">${!lit&&!blown?t('tapLight'):lit?(mic?t('mic'):t('blow')):t('done')}</p>
-  <div ref=${cake} class="relative inline-block pt-12" style=${{filter:lit?'drop-shadow(0 0 30px rgba(251,191,36,.55))':'none',transition:'filter .6s'}}>
+  <div ref=${cake} class="relative inline-block pt-12">
    <div class="absolute top-0 inset-x-0 flex justify-center gap-4 text-3xl h-12">
-    ${spark&&html`<span class="absolute pointer-events-none" style="left:50%;top:0;font-size:2rem;animation:spk .7s ease-out forwards">✨</span>`}
-    ${lit&&(bd?[0,1,2]:[0]).map(i=>html`<span key=${i} style="animation:flick .3s infinite alternate">${bd?'🔥':'✨'}</span>`)}
+    ${spark&&html`<span class="absolute pointer-events-none" style=${{left:'50%',top:bd?'62px':'0px',fontSize:'2rem',animation:'spk .7s ease-out forwards'}}>✨</span>`}
+    ${lit&&!bd&&html`<span style="animation:flick .3s infinite alternate">✨</span>`}
     ${blown&&[0,1,2].map(i=>html`<span key=${'s'+i} style=${{animation:'rise 2s forwards',animationDelay:i*.25+'s',opacity:0}}>💨</span>`)}
    </div>
    ${bd&&(room.cake_text||room.candle_numbers)&&html`<div class="gold font-bold text-xl">${room.cake_text} ${room.candle_numbers&&'🕯️ '+room.candle_numbers}</div>`}
-   <div onPointerDown=${e=>{kx.current=e.clientX}} onPointerUp=${e=>{if(blown&&kx.current!=null&&Math.abs(e.clientX-kx.current)>60)up({is_cake_cut:true,ev:'cut'});kx.current=null}} class="text-[8rem] sm:text-[10rem] leading-none" style="touch-action:none;filter:drop-shadow(0 25px 30px rgba(0,0,0,.6));animation:float 3s ease-in-out infinite">${room.is_cake_cut?'🍰':o.e}</div>
+   <div onPointerDown=${e=>{kx.current=e.clientX}} onPointerUp=${e=>{if(blown&&kx.current!=null&&Math.abs(e.clientX-kx.current)>60)up({is_cake_cut:true,ev:'cut'});kx.current=null}} class="text-[8rem] sm:text-[10rem] leading-none" style="touch-action:none;filter:drop-shadow(0 25px 30px rgba(0,0,0,.6));animation:float 3s ease-in-out infinite">${room.is_cake_cut?'🍰':bd?html`<${CakeArt} lit=${lit}/>`:o.e}</div>
    ${blown&&!room.is_cake_cut&&html`<p class="text-sm opacity-70">${t('cut')}</p>`}
   </div>
   <div class="mt-5 flex justify-center gap-3 flex-wrap">
@@ -165,14 +177,14 @@ function Viz({src}){const a=useRef(),c=useRef();useEffect(()=>{const el=a.curren
  return html`<div><canvas ref=${c} width=300 height=60 class="mx-auto max-w-full"/><audio ref=${a} src=${src} controls class="w-full mt-2"/></div>`}
 
 function Env({note,t,sty}){
- const[o,setO]=useState(false),E=ENV[sty]||ENV.minimal_glass,seal={vintage:'🔴',royal_gold:'👑',romantic:'💖',minimal_glass:'✨'}[sty]||'✨';
+ const[isEnvelopeOpen,setO]=useState(false),o=isEnvelopeOpen,E=ENV[sty]||ENV.minimal_glass,seal={vintage:'🔴',royal_gold:'👑',romantic:'💖',minimal_glass:'✨'}[sty]||'✨';
  const open=()=>{if(o)return;setO(true);try{const a=ac(),n=2400,b=a.createBuffer(1,n,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const s=a.createBufferSource(),g=a.createGain();g.gain.value=.4;s.buffer=b;s.connect(g);g.connect(a.destination);s.start()}catch(e){}};
  return html`<div class="mt-5 text-center">
   <div role="button" tabindex="0" onClick=${open} onKeyDown=${e=>e.key=='Enter'&&open()} class="relative mx-auto cursor-pointer select-none" style=${{width:'min(80vw,300px)',height:o?'300px':'170px',transition:'height .8s ease',touchAction:'manipulation'}}>
    <div class="absolute inset-x-0 bottom-0 rounded-xl" style=${{height:'170px',background:E.bg,border:'1px solid rgba(251,191,36,.45)',boxShadow:'0 10px 30px rgba(0,0,0,.5)'}}></div>
    <div class="absolute left-3 right-3 rounded-lg p-4 text-left text-sm whitespace-pre-wrap overflow-auto" style=${{bottom:'12px',height:o?'270px':'110px',opacity:o?1:0,transition:'all .9s .35s ease',background:'#fffdf5',color:'#3b2a14',zIndex:o?3:1}}>${note||'❤'}</div>
    <div class="absolute inset-x-0 bottom-0" style=${{height:'170px',zIndex:2,pointerEvents:'none',background:E.bg,clipPath:'polygon(0 100%,50% 40%,100% 100%)',filter:'brightness(.92)',opacity:o?0:1,transition:'opacity .4s .5s'}}></div>
-   <div class="absolute inset-x-0" style=${{bottom:'85px',height:'85px',zIndex:4,pointerEvents:'none',background:E.bg,filter:'brightness(.8)',clipPath:'polygon(0 0,100% 0,50% 100%)',transformOrigin:'top',transform:o?'perspective(600px) rotateX(180deg)':'none',transition:'transform .7s ease'}}></div>
+   <div class="absolute inset-x-0" style=${{bottom:'85px',height:'85px',zIndex:4,pointerEvents:'none',background:E.bg,filter:'brightness(.8)',clipPath:'polygon(0 0,100% 0,50% 100%)',transformOrigin:'top',transform:o?'scaleY(-1)':'none',opacity:o?0:1,transition:'transform .7s ease,opacity .5s .7s'}}></div>
    <div class="absolute text-3xl" style=${{left:'calc(50% - 20px)',width:'40px',bottom:'66px',zIndex:5,pointerEvents:'none',transform:o?'scale(0) rotate(50deg)':'scale(1)',opacity:o?0:1,transition:'all .45s ease',animation:o?'none':'float 2s ease-in-out infinite'}}>${seal}</div>
   </div>
   ${!o&&html`<p class="text-sm opacity-70 mt-3">${t('env')}</p>`}</div>`}
